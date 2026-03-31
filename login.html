@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الدخول - قطرة حياة</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩸</text></svg>">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="animations.css">
+<link rel="stylesheet" href="components.css">
+<style>
+/* ═══ Page Shell ═══ */
+.auth-bg{min-height:100vh;background:var(--bg-secondary);padding:calc(var(--header-height)+32px) 16px 60px;display:flex;align-items:flex-start}
+
+/* ═══ Steps ═══ */
+.step{display:none;width:100%}
+.step.active{display:block;animation:fadeInUp .35s ease}
+
+/* ═══ Type Cards ═══ */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:860px;margin:0 auto}
+.type-card{
+  background:var(--bg-card);border:2px solid var(--border);
+  border-radius:var(--radius-xl);padding:36px 22px 28px;
+  text-align:center;cursor:pointer;transition:var(--transition);
+  position:relative;overflow:hidden;user-select:none
+}
+.type-card:hover{border-color:var(--primary);transform:translateY(-6px);box-shadow:0 24px 60px var(--shadow-strong)}
+.type-card:active{transform:translateY(-2px)}
+.tc-icon{font-size:3.5rem;display:block;margin-bottom:14px;transition:transform .3s}
+.type-card:hover .tc-icon{transform:scale(1.15)}
+.tc-title{font-size:1.15rem;font-weight:800;color:var(--text-primary);margin-bottom:8px}
+.tc-desc{font-size:.85rem;color:var(--text-muted);margin:0 0 18px;line-height:1.6}
+.tc-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--primary-glow);color:var(--primary);
+  font-size:.83rem;font-weight:700;padding:8px 18px;
+  border-radius:50px;transition:var(--transition)
+}
+.type-card:hover .tc-btn{background:var(--primary);color:#fff}
+
+/* ═══ Form Box ═══ */
+.fbox{
+  background:var(--bg-card);border-radius:var(--radius-xl);
+  padding:40px;max-width:700px;margin:0 auto;
+  border:1px solid var(--border);box-shadow:0 20px 80px var(--shadow)
+}
+.fbox-icon{font-size:2.8rem;display:block;text-align:center;margin-bottom:10px}
+.fbox-title{font-size:1.4rem;font-weight:800;color:var(--text-primary);text-align:center;margin-bottom:4px}
+.fbox-sub{font-size:.87rem;color:var(--text-muted);text-align:center;margin:0 0 26px}
+
+/* ═══ Back Button ═══ */
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;
+  color:var(--text-muted);font-size:.88rem;cursor:pointer;
+  margin-bottom:18px;background:none;border:none;
+  padding:0;font-family:inherit;transition:var(--transition)
+}
+.back-link:hover{color:var(--primary)}
+
+/* ═══ 2-col grid ═══ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+
+/* ═══ Radio Row ═══ */
+.rrow{display:flex;gap:20px;flex-wrap:wrap;margin-top:8px}
+.rrow label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.92rem}
+.rrow input[type=radio]{accent-color:var(--primary);width:17px;height:17px}
+
+/* ═══ Password Eye ═══ */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-left:42px}
+.pw-wrap .eye-btn{
+  position:absolute;top:50%;transform:translateY(-50%);
+  left:12px;background:none;border:none;cursor:pointer;
+  color:var(--text-muted);font-size:1rem;padding:4px;line-height:1
+}
+
+/* ═══ Upload / Drop ═══ */
+.dzone{
+  border:2px dashed var(--border);border-radius:var(--radius-lg);
+  padding:26px 18px;text-align:center;cursor:pointer;
+  transition:var(--transition);background:var(--bg-secondary)
+}
+.dzone:hover,.dzone.over{border-color:var(--primary);background:var(--primary-glow)}
+.dzone-icon{font-size:2.2rem;margin-bottom:8px}
+.dzone p{font-size:.86rem;color:var(--text-secondary);margin:0}
+.dzone span{color:var(--primary);font-weight:700}
+.prev-box{position:relative;margin-top:12px;border-radius:var(--radius);overflow:hidden}
+.prev-box img{width:100%;max-height:200px;object-fit:cover;display:block}
+.prev-rm{
+  position:absolute;top:8px;right:8px;width:28px;height:28px;
+  border-radius:50%;background:rgba(0,0,0,.6);color:#fff;
+  border:none;cursor:pointer;font-size:.82rem;
+  display:flex;align-items:center;justify-content:center
+}
+
+/* ═══ Terms Box ═══ */
+.terms-bx{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:18px}
+.terms-bx h5{font-size:.88rem;color:var(--text-primary);margin:0 0 10px}
+.t-row{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border);font-size:.83rem;color:var(--text-secondary)}
+.t-row:last-child{border-bottom:none}
+.t-row .ti{color:var(--primary);flex-shrink:0}
+
+/* ═══ Accept Checkbox ═══ */
+.accept-box{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:13px 15px;background:var(--primary-glow);
+  border-radius:var(--radius);border:1px solid rgba(192,57,43,.2);
+  margin-bottom:20px;cursor:pointer
+}
+.accept-box input{margin-top:3px;accent-color:var(--primary);width:16px;height:16px;flex-shrink:0}
+.accept-box span{font-size:.88rem;line-height:1.5}
+
+/* ═══ Section Separator ═══ */
+.sec-head{color:var(--primary);font-size:.95rem;font-weight:800;border-bottom:2px solid var(--border);padding-bottom:8px;margin:22px 0 16px}
+
+/* ═══ Success ═══ */
+.success-scr{text-align:center;padding:48px 20px}
+.success-scr .s-icon{font-size:5rem;display:block;margin-bottom:18px}
+.success-scr h2{margin-bottom:10px}
+.success-scr p{color:var(--text-muted);max-width:400px;margin:0 auto 24px}
+
+/* ═══ Toast ═══ */
+.qh-toast{
+  position:fixed;bottom:20px;left:20px;right:auto;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:14px 18px;
+  box-shadow:0 12px 40px rgba(0,0,0,.15);
+  display:flex;align-items:center;gap:10px;
+  z-index:9999;max-width:340px;font-size:.9rem;
+  animation:slideInLeft .3s ease
+}
+@keyframes slideInLeft{from{transform:translateX(-120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ═══ Responsive ═══ */
+@media(max-width:768px){
+  .auth-bg{padding-top:calc(var(--header-height)+16px)}
+  .type-grid{grid-template-columns:1fr;gap:12px}
+  .type-card{
+    padding:16px 14px;display:flex;
+    align-items:center;gap:16px;text-align:right;
+    border-radius:var(--radius-lg)
+  }
+  .tc-icon{font-size:2.2rem;margin-bottom:0;flex-shrink:0}
+  .tc-btn{display:none}
+  .fbox{padding:24px 16px}
+  .g2{grid-template-columns:1fr}
+  .qh-toast{left:12px;right:12px;max-width:none}
+}
+@media(max-width:480px){
+  .fbox{padding:20px 13px}
+  .fbox-title{font-size:1.2rem}
+  .type-card{padding:13px 12px;gap:13px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🩸</div>
+        <div class="logo-text">
+          <span class="name">قطرة حياة</span>
+          <span class="tagline">بنك الدم الإلكتروني</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <button class="btn-icon theme-toggle" onclick="toggleTheme()">🌙</button>
+        <button class="lang-toggle" onclick="toggleLang()">EN</button>
+        <a href="index.html" class="btn btn-outline btn-sm">🏠 الرئيسية</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════ MAIN ══════ -->
+<main class="auth-bg">
+<div class="container">
+
+  <!-- ══ S0: اختيار النوع ══ -->
+  <div id="s0" class="step active">
+    <div style="text-align:center;margin-bottom:28px">
+      <span class="section-tag" style="display:inline-flex">🩸 قطرة حياة</span>
+      <h1 class="section-title" style="margin-top:12px">اختر نوع حسابك</h1>
+      <div class="divider"></div>
+      <p style="color:var(--text-muted);font-size:.95rem">اختر الخيار المناسب للبدء في التسجيل</p>
+    </div>
+
+    <div class="type-grid">
+      <div class="type-card" onclick="goTo('s-ben')">
+        <span class="tc-icon">🏥</span>
+        <div>
+          <div class="tc-title">مستفيد</div>
+          <p class="tc-desc">أنا أو أحد ذويّ يحتاج إلى الحصول على دم</p>
+          <span class="tc-btn">تسجيل كمستفيد ←</span>
+        </div>
+      </div>
+
+      <div class="type-card" onclick="goTo('s-don')">
+        <span class="tc-icon">🩸</span>
+        <div>
+          <div class="tc-title">متبرع</div>
+          <p class="tc-desc">أريد التبرع بدمي لمن يحتاج إليه</p>
+          <span class="tc-btn">تسجيل كمتبرع ←</span>
+        </div>
+      </div>
+
+      <div class="type-card" onclick="goTo('s-hos')">
+        <span class="tc-icon">🏨</span>
+        <div>
+          <div class="tc-title">مستشفى</div>
+          <p class="tc-desc">مستشفى أو مركز طبي معتمد</p>
+          <span class="tc-btn">تسجيل كمستشفى ←</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:24px">
+      <span style="color:var(--text-muted);font-size:.92rem">لديك حساب؟ </span>
+      <button onclick="goTo('s-login')" class="btn btn-outline btn-sm" style="margin-right:6px">🔐 تسجيل الدخول</button>
+    </div>
+  </div>
+
+  <!-- ══ S-BEN: مستفيد ══ -->
+  <div id="s-ben" class="step">
+    <button class="back-link" onclick="goTo('s0')">← العودة</button>
+    <div class="fbox">
+      <span class="fbox-icon">🏥</span>
+      <div class="fbox-title">تسجيل كمستفيد</div>
+      <p class="fbox-sub">سيتم مراجعة طلبك من الإدارة خلال 24 ساعة</p>
+
+      <div class="alert alert-info" style="margin-bottom:18px">
+        <span>ℹ️</span><span>بياناتك محفوظة بسرية تامة ولا تُستخدم إلا للربط بالمتبرعين.</span>
+      </div>
+
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> الاسم الكامل</label>
+          <input id="b-name" type="text" class="form-control" placeholder="الاسم رباعي كاملاً">
+          <div class="form-error" id="b-name-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> فصيلة الدم</label>
+          <select id="b-blood" class="form-control">
+            <option value="">اختر الفصيلة...</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+          <div class="form-error" id="b-blood-e"></div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> رقم الهاتف (11 رقم)</label>
+          <input id="b-phone" type="tel" class="form-control" placeholder="01xxxxxxxxx" maxlength="11" style="direction:ltr;text-align:right">
+          <div class="form-error" id="b-phone-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> البريد الإلكتروني</label>
+          <input id="b-email" type="email" class="form-control" placeholder="example@email.com">
+          <div class="form-error" id="b-email-e"></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> العنوان بالتفصيل</label>
+        <textarea id="b-addr" class="form-control" rows="2" placeholder="المحافظة / المدينة / الحي / الشارع / رقم المنزل..."></textarea>
+        <div class="form-error" id="b-addr-e"></div>
+      </div>
+
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> كلمة المرور</label>
+          <div class="pw-wrap">
+            <input id="b-pass" type="password" class="form-control" placeholder="8 أحرف على الأقل">
+            <button type="button" class="eye-btn" onclick="eyeToggle('b-pass',this)">👁️</button>
+          </div>
+          <div class="form-error" id="b-pass-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> تأكيد كلمة المرور</label>
+          <div class="pw-wrap">
+            <input id="b-pass2" type="password" class="form-control" placeholder="أعد كتابة كلمة المرور">
+            <button type="button" class="eye-btn" onclick="eyeToggle('b-pass2',this)">👁️</button>
+          </div>
+          <div class="form-error" id="b-pass2-e"></div>
+        </div>
+      </div>
+
+      <!-- Upload Proof -->
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> صورة تثبت الحاجة للدم</label>
+        <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:10px">تقرير طبي أو خطاب مستشفى — JPG أو PNG</p>
+        <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+          <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('b-file').click()">📁 رفع صورة</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="openCam('b')">📷 كاميرا</button>
+        </div>
+        <input type="file" id="b-file" accept="image/*" style="display:none" onchange="handleFile(this,'b-prev','b-drop')">
+        <div class="dzone" id="b-drop"
+          ondragover="event.preventDefault();this.classList.add('over')"
+          ondragleave="this.classList.remove('over')"
+          ondrop="handleDrop(event,'b-prev','b-drop')"
+          onclick="document.getElementById('b-file').click()">
+          <div class="dzone-icon">📄</div>
+          <p>اسحب الصورة هنا أو <span>اضغط للاختيار</span></p>
+        </div>
+        <div id="b-prev"></div>
+        <div class="form-error" id="b-proof-e"></div>
+      </div>
+
+      <button onclick="submitBen()" class="btn btn-primary btn-full btn-lg" style="margin-top:6px">🩸 إرسال الطلب</button>
+      <p style="text-align:center;margin-top:12px;font-size:.84rem;color:var(--text-muted)">
+        لديك حساب؟ <button onclick="goTo('s-login')" style="background:none;border:none;color:var(--primary);font-weight:700;cursor:pointer;font-family:inherit">تسجيل الدخول</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ S-DON: متبرع ══ -->
+  <div id="s-don" class="step">
+    <button class="back-link" onclick="goTo('s0')">← العودة</button>
+    <div class="fbox" style="max-width:740px">
+      <span class="fbox-icon">🩸</span>
+      <div class="fbox-title">تسجيل كمتبرع</div>
+      <p class="fbox-sub">شكراً لك على هذا العمل النبيل 💚</p>
+
+      <div class="terms-bx">
+        <h5>📋 شروط التبرع — يرجى القراءة أولاً</h5>
+        <div class="t-row"><span class="ti">✅</span><span>العمر بين 18–65 سنة والوزن لا يقل عن 50 كيلو.</span></div>
+        <div class="t-row"><span class="ti">✅</span><span>خلوّ من التهاب الكبد وفيروس HIV والأمراض الخطيرة.</span></div>
+        <div class="t-row"><span class="ti">✅</span><span>فترة انتظار: 3 أشهر للرجال / 4 أشهر للسيدات بين كل تبرع.</span></div>
+        <div class="t-row"><span class="ti">✅</span><span>لا عمليات جراحية خلال آخر 6 أشهر.</span></div>
+        <div class="t-row"><span class="ti">✅</span><span>نوم جيد ووجبة خفيفة قبل التبرع.</span></div>
+      </div>
+
+      <div class="sec-head">👤 البيانات الشخصية</div>
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> الاسم الكامل</label>
+          <input id="d-name" type="text" class="form-control" placeholder="الاسم رباعي كاملاً">
+          <div class="form-error" id="d-name-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> فصيلة الدم</label>
+          <select id="d-blood" class="form-control">
+            <option value="">اختر الفصيلة...</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+          <div class="form-error" id="d-blood-e"></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> رقم الهاتف (11 رقم)</label>
+          <input id="d-phone" type="tel" class="form-control" placeholder="01xxxxxxxxx" maxlength="11" style="direction:ltr;text-align:right">
+          <div class="form-error" id="d-phone-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> البريد الإلكتروني</label>
+          <input id="d-email" type="email" class="form-control" placeholder="example@email.com">
+          <div class="form-error" id="d-email-e"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> العنوان بالتفصيل</label>
+        <textarea id="d-addr" class="form-control" rows="2" placeholder="المحافظة / المدينة / الشارع..."></textarea>
+        <div class="form-error" id="d-addr-e"></div>
+      </div>
+
+      <div class="sec-head">🏥 الأسئلة الصحية</div>
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> هل أنت مدخن؟</label>
+        <div class="rrow">
+          <label><input type="radio" name="d-smoker" id="d-smoke-no" value="no" checked> لا</label>
+          <label><input type="radio" name="d-smoker" id="d-smoke-yes" value="yes"> نعم</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> هل تعاني من أمراض مزمنة؟</label>
+        <div class="rrow">
+          <label><input type="radio" name="d-dis" id="d-dis-no" value="no" checked onchange="toggleDis(false)"> لا</label>
+          <label><input type="radio" name="d-dis" id="d-dis-yes" value="yes" onchange="toggleDis(true)"> نعم</label>
+        </div>
+      </div>
+      <div id="d-dis-wrap" style="display:none">
+        <div class="form-group">
+          <label class="form-label">اذكر الأمراض</label>
+          <textarea id="d-dis-txt" class="form-control" rows="2" placeholder="اذكر الأمراض المزمنة..."></textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">آخر مرة تبرعت (اتركه فارغاً إن لم تتبرع من قبل)</label>
+        <input id="d-lastdon" type="date" class="form-control" style="direction:ltr;text-align:right">
+      </div>
+
+      <div class="sec-head">🔐 بيانات الدخول</div>
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> كلمة المرور</label>
+          <div class="pw-wrap">
+            <input id="d-pass" type="password" class="form-control" placeholder="8 أحرف على الأقل">
+            <button type="button" class="eye-btn" onclick="eyeToggle('d-pass',this)">👁️</button>
+          </div>
+          <div class="form-error" id="d-pass-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> تأكيد كلمة المرور</label>
+          <div class="pw-wrap">
+            <input id="d-pass2" type="password" class="form-control" placeholder="أعد كتابة كلمة المرور">
+            <button type="button" class="eye-btn" onclick="eyeToggle('d-pass2',this)">👁️</button>
+          </div>
+          <div class="form-error" id="d-pass2-e"></div>
+        </div>
+      </div>
+
+      <label class="accept-box">
+        <input type="checkbox" id="d-terms">
+        <span>أوافق على <strong style="color:var(--primary)">شروط التبرع</strong> أعلاه وأُقِرّ بصحة المعلومات.</span>
+      </label>
+
+      <button onclick="submitDon()" class="btn btn-primary btn-full btn-lg">🩸 إرسال الطلب</button>
+      <p style="text-align:center;margin-top:12px;font-size:.84rem;color:var(--text-muted)">
+        لديك حساب؟ <button onclick="goTo('s-login')" style="background:none;border:none;color:var(--primary);font-weight:700;cursor:pointer;font-family:inherit">تسجيل الدخول</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ S-HOS: مستشفى ══ -->
+  <div id="s-hos" class="step">
+    <button class="back-link" onclick="goTo('s0')">← العودة</button>
+    <div class="fbox">
+      <span class="fbox-icon">🏨</span>
+      <div class="fbox-title">تسجيل مستشفى / مركز طبي</div>
+      <p class="fbox-sub">سيتم التحقق من البيانات قبل التفعيل</p>
+
+      <div class="alert alert-info" style="margin-bottom:18px">
+        <span>🏥</span><span>نرحب بالمستشفيات والمراكز الطبية المعتمدة. يُرجى تعبئة البيانات بدقة.</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> اسم المستشفى / المركز الطبي</label>
+        <input id="h-name" type="text" class="form-control" placeholder="الاسم الرسمي الكامل">
+        <div class="form-error" id="h-name-e"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> العنوان الكامل</label>
+        <textarea id="h-addr" class="form-control" rows="2" placeholder="المحافظة / المدينة / الشارع / رقم المبنى..."></textarea>
+        <div class="form-error" id="h-addr-e"></div>
+      </div>
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> البريد الإلكتروني الرسمي</label>
+          <input id="h-email" type="email" class="form-control" placeholder="hospital@example.com">
+          <div class="form-error" id="h-email-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> رقم التواصل (11 رقم)</label>
+          <input id="h-phone" type="tel" class="form-control" placeholder="01xxxxxxxxx" maxlength="11" style="direction:ltr;text-align:right">
+          <div class="form-error" id="h-phone-e"></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> رقم الترخيص الرسمي</label>
+          <input id="h-license" type="text" class="form-control" placeholder="رقم ترخيص وزارة الصحة" style="direction:ltr;text-align:right">
+          <div class="form-error" id="h-license-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">نوع المنشأة</label>
+          <select id="h-type" class="form-control">
+            <option value="">اختر النوع...</option>
+            <option value="gov">مستشفى حكومي</option>
+            <option value="private">مستشفى خاص</option>
+            <option value="center">مركز طبي</option>
+            <option value="clinic">عيادة متخصصة</option>
+            <option value="uni">مستشفى جامعي</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">تفاصيل إضافية</label>
+        <textarea id="h-notes" class="form-control" rows="2" placeholder="التخصصات، عدد الأسرة، ساعات العمل..."></textarea>
+      </div>
+      <div class="g2">
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> كلمة المرور</label>
+          <div class="pw-wrap">
+            <input id="h-pass" type="password" class="form-control" placeholder="8 أحرف على الأقل">
+            <button type="button" class="eye-btn" onclick="eyeToggle('h-pass',this)">👁️</button>
+          </div>
+          <div class="form-error" id="h-pass-e"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> تأكيد كلمة المرور</label>
+          <div class="pw-wrap">
+            <input id="h-pass2" type="password" class="form-control" placeholder="أعد كتابة كلمة المرور">
+            <button type="button" class="eye-btn" onclick="eyeToggle('h-pass2',this)">👁️</button>
+          </div>
+          <div class="form-error" id="h-pass2-e"></div>
+        </div>
+      </div>
+
+      <label class="accept-box">
+        <input type="checkbox" id="h-terms">
+        <span>أُقِرّ بأن جميع البيانات صحيحة وأن المنشأة مرخصة رسمياً.</span>
+      </label>
+
+      <button onclick="submitHos()" class="btn btn-primary btn-full btn-lg">🏥 إرسال الطلب</button>
+      <p style="text-align:center;margin-top:12px;font-size:.84rem;color:var(--text-muted)">
+        لديك حساب؟ <button onclick="goTo('s-login')" style="background:none;border:none;color:var(--primary);font-weight:700;cursor:pointer;font-family:inherit">تسجيل الدخول</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ S-LOGIN: تسجيل الدخول ══ -->
+  <div id="s-login" class="step">
+    <button class="back-link" onclick="goTo('s0')">← العودة</button>
+    <div class="fbox" style="max-width:460px">
+      <span class="fbox-icon">🔐</span>
+      <div class="fbox-title">تسجيل الدخول</div>
+      <p class="fbox-sub">مرحباً بعودتك في قطرة حياة 👋</p>
+
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> البريد الإلكتروني</label>
+        <input id="l-email" type="email" class="form-control" placeholder="example@email.com">
+        <div class="form-error" id="l-email-e"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> كلمة المرور</label>
+        <div class="pw-wrap">
+          <input id="l-pass" type="password" class="form-control" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+          <button type="button" class="eye-btn" onclick="eyeToggle('l-pass',this)">👁️</button>
+        </div>
+        <div class="form-error" id="l-pass-e"></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:.84rem;cursor:pointer">
+          <input type="checkbox" style="accent-color:var(--primary)"> تذكرني
+        </label>
+        <a href="#" style="font-size:.84rem;color:var(--text-muted)">نسيت كلمة المرور؟</a>
+      </div>
+
+      <button onclick="doLogin()" class="btn btn-primary btn-full btn-lg">🔐 تسجيل الدخول</button>
+
+      <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);text-align:center">
+        <p style="color:var(--text-muted);font-size:.87rem;margin-bottom:12px">ليس لديك حساب؟</p>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button onclick="goTo('s-ben')" class="btn btn-outline btn-sm">🏥 مستفيد</button>
+          <button onclick="goTo('s-don')" class="btn btn-outline btn-sm">🩸 متبرع</button>
+          <button onclick="goTo('s-hos')" class="btn btn-outline btn-sm">🏨 مستشفى</button>
+        </div>
+      </div>
+
+      <div class="alert alert-info" style="margin-top:18px;font-size:.82rem;line-height:1.8">
+        <span>🛡️</span>
+        <div>
+          <strong>بيانات الأدمن:</strong><br>
+          📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e084928f908f868c898685d1d3d2a0878d81898cce838f8d">[email&#160;protected]</a><br>
+          🔑 Admin@DropOfLife2024
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ S-SUCCESS ══ -->
+  <div id="s-success" class="step">
+    <div class="fbox">
+      <div class="success-scr" id="succ-body">
+        <span class="s-icon">✅</span>
+        <h2>تم إرسال طلبك!</h2>
+        <p>سيتم التواصل معك قريباً.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <a href="index.html" class="btn btn-outline">🏠 الرئيسية</a>
+          <button onclick="goTo('s-login')" class="btn btn-primary">🔐 تسجيل الدخول</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<!-- Camera Modal -->
+<div class="modal-overlay" id="cam-modal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <h3 class="modal-title">📷 التقاط صورة</h3>
+      <button class="modal-close" onclick="closeCam()">✕</button>
+    </div>
+    <video id="cam-video" style="width:100%;border-radius:var(--radius);background:#000;margin-top:8px" autoplay playsinline></video>
+    <canvas id="cam-canvas" style="display:none"></canvas>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
+      <button class="btn btn-primary" onclick="capturePhoto()">📸 التقاط</button>
+      <button class="btn btn-outline" onclick="closeCam()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<footer style="background:var(--text-dark);padding:16px;text-align:center;color:#666;font-size:.8rem">
+  قطرة حياة © 2024 | منصة مجانية لوجه الله | 📞 01067221496
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ══════════════════════════════════════════════════
+   ALL LOGIC — self-contained, no external JS needed
+   ══════════════════════════════════════════════════ */
+
+/* ── Theme & Lang (simple standalone) ── */
+(function(){
+  var t=localStorage.getItem('qh_theme')||'light';
+  var l=localStorage.getItem('qh_lang')||'ar';
+  document.documentElement.setAttribute('data-theme',t);
+  if(l==='en'){document.body.classList.add('lang-en');document.documentElement.setAttribute('dir','ltr');}
+  document.querySelector('.theme-toggle').textContent=t==='dark'?'☀️':'🌙';
+  document.querySelector('.lang-toggle').textContent=l==='ar'?'EN':'عربي';
+})();
+
+function toggleTheme(){
+  var t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('qh_theme',t);
+  document.querySelector('.theme-toggle').textContent=t==='dark'?'☀️':'🌙';
+}
+function toggleLang(){
+  var l=localStorage.getItem('qh_lang')||'ar';
+  var n=l==='ar'?'en':'ar';
+  localStorage.setItem('qh_lang',n);
+  location.reload();
+}
+
+/* ── Navigation ── */
+function goTo(id){
+  document.querySelectorAll('.step').forEach(function(s){s.classList.remove('active');});
+  var el=document.getElementById(id);
+  if(el){el.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+}
+
+/* ── Diseases toggle ── */
+function toggleDis(show){
+  document.getElementById('d-dis-wrap').style.display=show?'':'none';
+}
+
+/* ── Eye toggle ── */
+function eyeToggle(id,btn){
+  var inp=document.getElementById(id);
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'👁️':'🙈';
+}
+
+/* ── Show/hide error ── */
+function setErr(id,msg){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.textContent=msg||'';
+  el.style.display=msg?'block':'none';
+  var inp=el.previousElementSibling||el.parentElement.querySelector('input,select,textarea');
+  if(inp){
+    var grp=el.closest('.form-group');
+    if(grp) grp.classList.toggle('error',!!msg);
+  }
+}
+function clrErr(id){setErr(id,'');}
+
+/* ── Validation helpers ── */
+function reqOk(v){return v&&v.trim().length>0;}
+function phoneOk(v){return /^01[0-2,5]\d{8}$/.test((v||'').trim());}
+function emailOk(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v||'');}
+
+/* ── Toast ── */
+function toast(msg,type){
+  var icons={success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+  var old=document.querySelector('.qh-toast');
+  if(old)old.remove();
+  var t=document.createElement('div');
+  t.className='qh-toast';
+  t.innerHTML='<span style="font-size:1.2rem">'+(icons[type]||'ℹ️')+'</span><span>'+msg+'</span>';
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove();},4000);
+}
+
+/* ── ID generator ── */
+function genId(){return 'QH'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).substr(2,4).toUpperCase();}
+
+/* ── Save user ── */
+function saveUser(u){
+  localStorage.setItem('qh_user',JSON.stringify(u));
+  var all=JSON.parse(localStorage.getItem('qh_all_users')||'[]');
+  all.push(u);
+  localStorage.setItem('qh_all_users',JSON.stringify(all));
+}
+
+/* ── Show success screen ── */
+function showSuccess(icon,title,msg,redirectTo){
+  document.getElementById('succ-body').innerHTML=
+    '<span class="s-icon">'+icon+'</span>'+
+    '<h2>'+title+'</h2>'+
+    '<p>'+msg+'</p>'+
+    '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">'+
+      '<a href="index.html" class="btn btn-outline">🏠 الرئيسية</a>'+
+      '<button onclick="goTo(\'s-login\')" class="btn btn-primary">🔐 تسجيل الدخول</button>'+
+    '</div>';
+  goTo('s-success');
+  if(redirectTo) setTimeout(function(){window.location.href=redirectTo;},3000);
+}
+
+/* ══ FILE UPLOAD ══ */
+function handleFile(inp,prevId,dropId){
+  var f=inp.files[0];
+  if(!f)return;
+  if(!f.type.startsWith('image/')){toast('يرجى اختيار صورة فقط','error');return;}
+  var r=new FileReader();
+  r.onload=function(e){showPreview(e.target.result,prevId,dropId);};
+  r.readAsDataURL(f);
+}
+function handleDrop(ev,prevId,dropId){
+  ev.preventDefault();
+  document.getElementById(dropId).classList.remove('over');
+  var f=ev.dataTransfer.files[0];
+  if(!f||!f.type.startsWith('image/')){toast('يرجى إسقاط صورة','error');return;}
+  var r=new FileReader();
+  r.onload=function(e){showPreview(e.target.result,prevId,dropId);};
+  r.readAsDataURL(f);
+}
+function showPreview(src,prevId,dropId){
+  var p=document.getElementById(prevId);
+  p.innerHTML='<div class="prev-box"><img src="'+src+'"><button class="prev-rm" onclick="clearPreview(\''+prevId+'\',\''+dropId+'\')">✕</button></div>';
+  p.dataset.src=src;
+  document.getElementById(dropId).style.display='none';
+}
+function clearPreview(prevId,dropId){
+  var p=document.getElementById(prevId);
+  p.innerHTML='';p.dataset.src='';
+  document.getElementById(dropId).style.display='';
+}
+
+/* ══ CAMERA ══ */
+var camStream=null, camTarget='';
+async function openCam(t){
+  camTarget=t;
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    document.getElementById('cam-video').srcObject=camStream;
+    document.getElementById('cam-modal').classList.add('open');
+    document.body.style.overflow='hidden';
+  }catch(e){toast('لا يمكن الوصول للكاميرا','error');}
+}
+function closeCam(){
+  if(camStream){camStream.getTracks().forEach(function(t){t.stop();});camStream=null;}
+  document.getElementById('cam-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function capturePhoto(){
+  var v=document.getElementById('cam-video'),c=document.getElementById('cam-canvas');
+  c.width=v.videoWidth;c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  var src=c.toDataURL('image/jpeg',.85);
+  showPreview(src,camTarget+'-prev',camTarget+'-drop');
+  closeCam();
+}
+document.getElementById('cam-modal').addEventListener('click',function(e){if(e.target===this)closeCam();});
+
+/* ══ SUBMIT BENEFICIARY ══ */
+function submitBen(){
+  var ok=true;
+  clrErr('b-name-e');clrErr('b-blood-e');clrErr('b-phone-e');clrErr('b-email-e');clrErr('b-addr-e');clrErr('b-pass-e');clrErr('b-pass2-e');clrErr('b-proof-e');
+
+  var name=document.getElementById('b-name').value.trim();
+  var blood=document.getElementById('b-blood').value;
+  var phone=document.getElementById('b-phone').value.trim();
+  var email=document.getElementById('b-email').value.trim();
+  var addr=document.getElementById('b-addr').value.trim();
+  var pass=document.getElementById('b-pass').value;
+  var pass2=document.getElementById('b-pass2').value;
+  var proof=document.getElementById('b-prev').dataset.src||'';
+
+  if(!reqOk(name)){setErr('b-name-e','الاسم مطلوب');ok=false;}
+  if(!blood){setErr('b-blood-e','اختر فصيلة الدم');ok=false;}
+  if(!phoneOk(phone)){setErr('b-phone-e','رقم الهاتف يجب أن يكون 11 رقم');ok=false;}
+  if(!emailOk(email)){setErr('b-email-e','البريد الإلكتروني غير صحيح');ok=false;}
+  if(!reqOk(addr)){setErr('b-addr-e','العنوان مطلوب');ok=false;}
+  if(pass.length<8){setErr('b-pass-e','كلمة المرور 8 أحرف على الأقل');ok=false;}
+  if(pass!==pass2){setErr('b-pass2-e','كلمتا المرور غير متطابقتين');ok=false;}
+  if(!proof){setErr('b-proof-e','يرجى إرفاق صورة الإثبات');ok=false;}
+
+  if(!ok){toast('يرجى تصحيح الأخطاء أولاً','error');return;}
+
+  var u={id:genId(),type:'beneficiary',status:'pending',fullname:name,blood_type:blood,phone:phone,email:email,address:addr,proof_url:proof,created:new Date().toISOString()};
+  saveUser(u);
+  if(typeof SheetsAPI!=='undefined') SheetsAPI.registerBeneficiary(u);
+  showSuccess('🏥','تم تسجيلك كمستفيد!','سيراجع فريقنا صورة الإثبات ويُخطرك خلال 24 ساعة.','dashboard-user.html');
+}
+
+/* ══ SUBMIT DONOR ══ */
+function submitDon(){
+  var ok=true;
+  clrErr('d-name-e');clrErr('d-blood-e');clrErr('d-phone-e');clrErr('d-email-e');clrErr('d-addr-e');clrErr('d-pass-e');clrErr('d-pass2-e');
+
+  var name=document.getElementById('d-name').value.trim();
+  var blood=document.getElementById('d-blood').value;
+  var phone=document.getElementById('d-phone').value.trim();
+  var email=document.getElementById('d-email').value.trim();
+  var addr=document.getElementById('d-addr').value.trim();
+  var pass=document.getElementById('d-pass').value;
+  var pass2=document.getElementById('d-pass2').value;
+  var smoker=document.getElementById('d-smoke-yes').checked;
+  var hasDis=document.getElementById('d-dis-yes').checked;
+  var disTxt=document.getElementById('d-dis-txt').value;
+  var lastDon=document.getElementById('d-lastdon').value;
+  var terms=document.getElementById('d-terms').checked;
+
+  if(!reqOk(name)){setErr('d-name-e','الاسم مطلوب');ok=false;}
+  if(!blood){setErr('d-blood-e','اختر فصيلة الدم');ok=false;}
+  if(!phoneOk(phone)){setErr('d-phone-e','رقم الهاتف يجب أن يكون 11 رقم');ok=false;}
+  if(!emailOk(email)){setErr('d-email-e','البريد الإلكتروني غير صحيح');ok=false;}
+  if(!reqOk(addr)){setErr('d-addr-e','العنوان مطلوب');ok=false;}
+  if(pass.length<8){setErr('d-pass-e','كلمة المرور 8 أحرف على الأقل');ok=false;}
+  if(pass!==pass2){setErr('d-pass2-e','كلمتا المرور غير متطابقتين');ok=false;}
+
+  if(!ok){toast('يرجى تصحيح الأخطاء أولاً','error');return;}
+  if(!terms){toast('يجب الموافقة على شروط التبرع أولاً','error');return;}
+
+  var u={id:genId(),type:'donor',status:'active',fullname:name,blood_type:blood,phone:phone,email:email,address:addr,smoker:smoker,has_diseases:hasDis,diseases_details:disTxt,last_donation:lastDon,created:new Date().toISOString()};
+  saveUser(u);
+  if(typeof SheetsAPI!=='undefined') SheetsAPI.registerDonor(u);
+  showSuccess('🩸','شكراً لتسجيلك كمتبرع! 💚','حسابك نشط الآن. تبرعك بالدم ينقذ أرواحاً.','dashboard-user.html');
+}
+
+/* ══ SUBMIT HOSPITAL ══ */
+function submitHos(){
+  var ok=true;
+  clrErr('h-name-e');clrErr('h-addr-e');clrErr('h-email-e');clrErr('h-phone-e');clrErr('h-license-e');clrErr('h-pass-e');clrErr('h-pass2-e');
+
+  var name=document.getElementById('h-name').value.trim();
+  var addr=document.getElementById('h-addr').value.trim();
+  var email=document.getElementById('h-email').value.trim();
+  var phone=document.getElementById('h-phone').value.trim();
+  var license=document.getElementById('h-license').value.trim();
+  var htype=document.getElementById('h-type').value;
+  var notes=document.getElementById('h-notes').value;
+  var pass=document.getElementById('h-pass').value;
+  var pass2=document.getElementById('h-pass2').value;
+  var terms=document.getElementById('h-terms').checked;
+
+  if(!reqOk(name)){setErr('h-name-e','اسم المستشفى مطلوب');ok=false;}
+  if(!reqOk(addr)){setErr('h-addr-e','العنوان مطلوب');ok=false;}
+  if(!emailOk(email)){setErr('h-email-e','البريد الإلكتروني غير صحيح');ok=false;}
+  if(!phoneOk(phone)){setErr('h-phone-e','رقم الهاتف يجب أن يكون 11 رقم');ok=false;}
+  if(!reqOk(license)){setErr('h-license-e','رقم الترخيص مطلوب');ok=false;}
+  if(pass.length<8){setErr('h-pass-e','كلمة المرور 8 أحرف على الأقل');ok=false;}
+  if(pass!==pass2){setErr('h-pass2-e','كلمتا المرور غير متطابقتين');ok=false;}
+
+  if(!ok){toast('يرجى تصحيح الأخطاء أولاً','error');return;}
+  if(!terms){toast('يجب الموافقة على الإقرار أولاً','error');return;}
+
+  var u={id:genId(),type:'hospital',status:'pending',hospital_name:name,address:addr,email:email,phone:phone,license_num:license,facility_type:htype,notes:notes,created:new Date().toISOString()};
+  saveUser(u);
+  if(typeof SheetsAPI!=='undefined') SheetsAPI.registerHospital(u);
+  showSuccess('🏨','تم تسجيل المستشفى!','سيتم التواصل معكم خلال 48 ساعة لتفعيل الحساب.','dashboard-user.html');
+}
+
+/* ══ LOGIN ══ */
+function doLogin(){
+  clrErr('l-email-e');clrErr('l-pass-e');
+  var email=document.getElementById('l-email').value.trim().toLowerCase();
+  var pass=document.getElementById('l-pass').value;
+
+  if(!emailOk(email)){setErr('l-email-e','يرجى إدخال بريد إلكتروني صحيح');return;}
+  if(!pass){setErr('l-pass-e','يرجى إدخال كلمة المرور');return;}
+
+  /* Admin */
+  if(email==='dropoflife132@gmail.com'){
+    if(pass!=='Admin@DropOfLife2024'){setErr('l-pass-e','كلمة المرور غير صحيحة');toast('كلمة المرور خاطئة','error');return;}
+    localStorage.setItem('qh_user',JSON.stringify({id:'ADMIN001',type:'admin',name:'المدير العام',email:email}));
+    toast('مرحباً بك يا مدير قطرة حياة 🛡️','success');
+    setTimeout(function(){window.location.href='dashboard-admin.html';},900);
+    return;
+  }
+
+  /* Regular user */
+  var all=JSON.parse(localStorage.getItem('qh_all_users')||'[]');
+  var user=all.find(function(u){return u.email&&u.email.toLowerCase()===email;});
+  if(!user){setErr('l-email-e','لا يوجد حساب بهذا البريد');toast('البريد غير مسجل في المنصة','error');return;}
+  localStorage.setItem('qh_user',JSON.stringify(user));
+  toast('تم تسجيل الدخول بنجاح ✅','success');
+  setTimeout(function(){window.location.href='dashboard-user.html';},900);
+}
+</script>
+<script src="sheets.js" onerror="console.warn('sheets.js not loaded - running offline')"></script>
+</body>
+</html>

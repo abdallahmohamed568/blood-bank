@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم الأدمن - قطرة حياة</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩸</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="animations.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="sidebar-toggle btn-icon" id="sidebar-toggle-btn" style="display:none;" onclick="toggleSidebar()" title="القائمة">☰</button>
+        <a href="index.html" class="logo">
+          <div class="logo-icon">🩸</div>
+          <div class="logo-text"><span class="name">قطرة حياة</span><span class="tagline">لوحة الإدارة</span></div>
+        </a>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon theme-toggle">🌙</button>
+        <button class="lang-toggle">EN</button>
+        <div style="position:relative;">
+          <a href="notifications.html" class="btn-icon">🔔</a>
+          <span class="notif-badge-count" style="position:absolute;top:-4px;right:-4px;background:var(--primary);color:white;border-radius:50%;width:18px;height:18px;font-size:0.7rem;display:flex;align-items:center;justify-content:center;display:none;">0</span>
+        </div>
+        <button class="btn btn-outline btn-sm btn-logout">تسجيل الخروج</button>
+      </div>
+    </div>
+  </div>
+</header>
+<!-- Sidebar Backdrop -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">🛡️</div>
+        <div>
+          <div class="sidebar-user-name">المدير العام</div>
+          <div class="sidebar-user-role">Admin</div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li class="sidebar-nav-item">
+        <button class="sidebar-nav-link active" onclick="showSection('overview')">
+          <span class="icon">📊</span> <span>نظرة عامة</span>
+        </button>
+      </li>
+      <li class="sidebar-nav-item">
+        <button class="sidebar-nav-link" onclick="showSection('beneficiaries')">
+          <span class="icon">🏥</span> <span>طلبات المستفيدين</span>
+          <span class="notif-count" id="pending-count" style="margin-right:auto;background:var(--primary);color:white;font-size:0.7rem;padding:1px 7px;border-radius:10px;font-weight:700;">0</span>
+        </button>
+      </li>
+      <li class="sidebar-nav-item">
+        <button class="sidebar-nav-link" onclick="showSection('donors')">
+          <span class="icon">🩸</span> <span>المتبرعون</span>
+        </button>
+      </li>
+      <li class="sidebar-nav-item">
+        <button class="sidebar-nav-link" onclick="showSection('hospitals')">
+          <span class="icon">🏨</span> <span>المستشفيات</span>
+        </button>
+      </li>
+      <div class="sidebar-divider"></div>
+      <li class="sidebar-nav-item">
+        <button class="sidebar-nav-link" onclick="showSection('chat-monitor')">
+          <span class="icon">💬</span> <span>مراقبة الدردشة</span>
+        </button>
+      </li>
+      <li class="sidebar-nav-item">
+        <button class="sidebar-nav-link" onclick="showSection('notifications-admin')">
+          <span class="icon">🔔</span> <span>الإشعارات</span>
+          <span class="notif-badge-count" style="margin-right:auto;background:var(--primary);color:white;font-size:0.7rem;padding:1px 7px;border-radius:10px;font-weight:700;display:none;">0</span>
+        </button>
+      </li>
+      <div class="sidebar-divider"></div>
+      <li class="sidebar-nav-item">
+        <a href="index.html" class="sidebar-nav-link">
+          <span class="icon">🌐</span> <span>عرض الموقع</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="dashboard-main">
+
+    <!-- OVERVIEW SECTION -->
+    <div id="section-overview" class="dash-section animate-fadeInUp">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">📊 نظرة عامة</h1>
+        <p class="dashboard-subtitle">مرحباً بك في لوحة تحكم قطرة حياة</p>
+      </div>
+
+      <div class="dash-stats">
+        <div class="dash-stat-card">
+          <div class="dash-stat-header">
+            <div class="dash-stat-icon red">🩸</div>
+          </div>
+          <div class="dash-stat-number" id="stat-donors">0</div>
+          <div class="dash-stat-label">إجمالي المتبرعين</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-header">
+            <div class="dash-stat-icon blue">🏥</div>
+          </div>
+          <div class="dash-stat-number" id="stat-beneficiaries">0</div>
+          <div class="dash-stat-label">إجمالي المستفيدين</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-header">
+            <div class="dash-stat-icon green">🏨</div>
+          </div>
+          <div class="dash-stat-number" id="stat-hospitals">0</div>
+          <div class="dash-stat-label">المستشفيات المسجلة</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-header">
+            <div class="dash-stat-icon orange">⏳</div>
+          </div>
+          <div class="dash-stat-number" id="stat-pending">0</div>
+          <div class="dash-stat-label">طلبات قيد المراجعة</div>
+        </div>
+      </div>
+
+      <!-- Recent Registrations -->
+      <div class="data-table-wrap">
+        <div class="data-table-header">
+          <h3 class="data-table-title">📋 آخر التسجيلات</h3>
+          <button class="btn btn-outline btn-sm" onclick="loadAllData()">🔄 تحديث</button>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>النوع</th>
+                <th>فصيلة الدم</th>
+                <th>الهاتف</th>
+                <th>الحالة</th>
+                <th>الإجراء</th>
+              </tr>
+            </thead>
+            <tbody id="recent-table">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BENEFICIARIES SECTION -->
+    <div id="section-beneficiaries" class="dash-section animate-fadeInUp" style="display:none;">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">🏥 طلبات المستفيدين</h1>
+        <p class="dashboard-subtitle">راجع وافق أو ارفض طلبات المستفيدين</p>
+      </div>
+      <div class="data-table-wrap">
+        <div class="data-table-header">
+          <h3 class="data-table-title">قائمة المستفيدين</h3>
+          <div style="display:flex;gap:8px;">
+            <select class="form-control" style="width:auto;padding:6px 12px;font-size:0.85rem;" id="filter-status">
+              <option value="">كل الحالات</option>
+              <option value="pending">قيد المراجعة</option>
+              <option value="approved">مقبول</option>
+              <option value="rejected">مرفوض</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>الفصيلة</th>
+                <th>الهاتف</th>
+                <th>العنوان</th>
+                <th>الإثبات</th>
+                <th>الحالة</th>
+                <th>الإجراء</th>
+              </tr>
+            </thead>
+            <tbody id="beneficiaries-table">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DONORS SECTION -->
+    <div id="section-donors" class="dash-section animate-fadeInUp" style="display:none;">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">🩸 المتبرعون</h1>
+        <p class="dashboard-subtitle">قائمة المتبرعين المسجلين</p>
+      </div>
+      <div class="data-table-wrap">
+        <div class="data-table-header">
+          <h3 class="data-table-title">قائمة المتبرعين</h3>
+          <select class="form-control" style="width:auto;padding:6px 12px;font-size:0.85rem;">
+            <option>كل الفصائل</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>الفصيلة</th>
+                <th>الهاتف</th>
+                <th>مدخن</th>
+                <th>أمراض</th>
+                <th>آخر تبرع</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="donors-table">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOSPITALS SECTION -->
+    <div id="section-hospitals" class="dash-section animate-fadeInUp" style="display:none;">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">🏨 المستشفيات</h1>
+        <p class="dashboard-subtitle">المستشفيات والمراكز الطبية المسجلة</p>
+      </div>
+      <div class="data-table-wrap">
+        <div class="data-table-header">
+          <h3 class="data-table-title">قائمة المستشفيات</h3>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>اسم المستشفى</th>
+                <th>العنوان</th>
+                <th>الإيميل</th>
+                <th>رقم الترخيص</th>
+                <th>الهاتف</th>
+                <th>الحالة</th>
+                <th>الإجراء</th>
+              </tr>
+            </thead>
+            <tbody id="hospitals-table">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT MONITOR SECTION -->
+    <div id="section-chat-monitor" class="dash-section animate-fadeInUp" style="display:none;">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">💬 مراقبة الدردشة</h1>
+        <p class="dashboard-subtitle">جميع المحادثات مرئية للإدارة</p>
+      </div>
+
+      <div class="alert alert-info mb-24">
+        <span>🛡️</span>
+        <span>تخضع جميع المحادثات على المنصة لرقابة الإدارة لضمان الاستخدام الأخلاقي والآمن.</span>
+      </div>
+
+      <!-- Flagged Messages Alert -->
+      <div id="flagged-alert" style="display:none;" class="alert" style="background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.3);">
+        <span>⚠️</span>
+        <span id="flagged-count">0 رسائل مشبوهة تحتاج مراجعة</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;height:500px;" class="chat-monitor-grid">
+        <!-- Chat list -->
+        <div style="background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;">
+          <div style="padding:16px;border-bottom:1px solid var(--border);font-weight:700;font-size:0.9rem;">المحادثات</div>
+          <div id="admin-chat-list" style="flex:1;overflow-y:auto;"></div>
+        </div>
+
+        <!-- Messages -->
+        <div style="background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;">
+          <div id="admin-chat-header" style="padding:16px;border-bottom:1px solid var(--border);font-weight:700;font-size:0.9rem;">اختر محادثة لعرضها</div>
+          <div id="admin-chat-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;">
+            <div style="text-align:center;color:var(--text-muted);margin:auto;">اختر محادثة من القائمة</div>
+          </div>
+          <!-- Admin can send message -->
+          <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;">
+            <input type="text" id="admin-chat-input" class="chat-input" placeholder="رد على المستخدم...">
+            <button class="btn btn-primary btn-sm" onclick="adminSendMsg()">إرسال</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS ADMIN SECTION -->
+    <div id="section-notifications-admin" class="dash-section animate-fadeInUp" style="display:none;">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">🔔 إرسال إشعار</h1>
+        <p class="dashboard-subtitle">أرسل إشعاراً لمستخدم أو لجميع المستخدمين</p>
+      </div>
+
+      <div class="card mb-24">
+        <h4 class="mb-16">📣 إشعار جديد</h4>
+        <div class="form-group">
+          <label class="form-label">المستلم</label>
+          <select class="form-control" id="notif-target">
+            <option value="ALL">جميع المستخدمين</option>
+            <option value="donors">المتبرعون فقط</option>
+            <option value="beneficiaries">المستفيدون فقط</option>
+            <option value="hospitals">المستشفيات فقط</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">نوع الإشعار</label>
+          <select class="form-control" id="notif-type">
+            <option value="info">معلومة</option>
+            <option value="approval">موافقة</option>
+            <option value="alert">تحذير</option>
+            <option value="message">رسالة</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">عنوان الإشعار</label>
+          <input type="text" class="form-control" id="notif-title" placeholder="عنوان الإشعار">
+        </div>
+        <div class="form-group">
+          <label class="form-label">نص الإشعار</label>
+          <textarea class="form-control" id="notif-body" rows="3" placeholder="اكتب نص الإشعار..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="sendAdminNotif()">📣 إرسال الإشعار</button>
+      </div>
+
+      <div class="notif-list" id="notifications-list">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;">لا توجد إشعارات</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Proof Image Modal -->
+<div class="modal-overlay" id="proof-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">📄 صورة الإثبات</h3>
+      <button class="modal-close" onclick="App.closeModal('proof-modal')">✕</button>
+    </div>
+    <img id="proof-modal-img" src="" alt="إثبات" style="width:100%;border-radius:var(--radius);max-height:400px;object-fit:contain;">
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-primary" onclick="approveCurrentUser()">✅ موافقة</button>
+      <button class="btn btn-outline" onclick="rejectCurrentUser()">❌ رفض</button>
+      <button class="btn btn-outline" onclick="App.closeModal('proof-modal')" style="margin-right:auto;">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="sheets.js"></script>
+<script src="chat.js"></script>
+<script>
+let currentReviewUser = null;
+
+// Section switching
+function showSection(id) {
+  document.querySelectorAll('.dash-section').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('.sidebar-nav-link').forEach(l => l.classList.remove('active'));
+  const el = document.getElementById('section-' + id);
+  if (el) el.style.display = '';
+  try { event?.currentTarget?.classList.add('active'); } catch(e) {}
+
+  if (id === 'chat-monitor') loadChatMonitor();
+  if (id === 'notifications-admin') ChatSystem.renderNotifications();
+}
+
+// Load data from localStorage
+function loadAllData() {
+  const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
+  const beneficiaries = users.filter(u => u.type === 'beneficiary');
+  const donors = users.filter(u => u.type === 'donor');
+  const hospitals = users.filter(u => u.type === 'hospital');
+  const pending = beneficiaries.filter(u => u.status === 'pending').length + hospitals.filter(u => u.status === 'pending').length;
+
+  document.getElementById('stat-donors').textContent = donors.length;
+  document.getElementById('stat-beneficiaries').textContent = beneficiaries.length;
+  document.getElementById('stat-hospitals').textContent = hospitals.length;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('pending-count').textContent = pending;
+  document.getElementById('pending-count').style.display = pending > 0 ? '' : 'none';
+
+  // Recent table
+  const recentTable = document.getElementById('recent-table');
+  if (users.length === 0) {
+    recentTable.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد تسجيلات بعد</td></tr>';
+  } else {
+    recentTable.innerHTML = users.slice(-10).reverse().map(u => `
+      <tr>
+        <td>${u.fullname || u.hospital_name || '-'}</td>
+        <td><span class="badge badge-${u.type==='donor'?'danger':u.type==='hospital'?'info':'warning'}">${u.type==='beneficiary'?'مستفيد':u.type==='donor'?'متبرع':'مستشفى'}</span></td>
+        <td>${u.blood_type || '-'}</td>
+        <td style="direction:ltr">${u.phone || '-'}</td>
+        <td><span class="badge badge-${u.status==='active'||u.status==='approved'?'success':u.status==='rejected'?'danger':'warning'}">${u.status==='pending'?'قيد المراجعة':u.status==='active'||u.status==='approved'?'مقبول':'مرفوض'}</span></td>
+        <td>
+          ${u.type==='beneficiary'&&u.status==='pending' ? `<button class="btn btn-primary btn-sm" onclick="reviewUser('${u.id}')">مراجعة</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Beneficiaries table
+  const benTable = document.getElementById('beneficiaries-table');
+  if (beneficiaries.length === 0) {
+    benTable.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>';
+  } else {
+    benTable.innerHTML = beneficiaries.map(u => `
+      <tr>
+        <td>${u.fullname || '-'}</td>
+        <td><strong style="color:var(--primary)">${u.blood_type || '-'}</strong></td>
+        <td style="direction:ltr">${u.phone || '-'}</td>
+        <td style="font-size:0.8rem">${(u.address||'-').substring(0,30)}...</td>
+        <td><button class="btn btn-outline btn-sm" onclick="viewProof('${u.id}')">📄 عرض</button></td>
+        <td><span class="badge badge-${u.status==='pending'?'warning':u.status==='approved'?'success':'danger'}">${u.status==='pending'?'قيد المراجعة':u.status==='approved'?'مقبول':'مرفوض'}</span></td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn btn-sm" style="background:#27AE60;color:white;padding:4px 10px;border-radius:6px;" onclick="approveUser('${u.id}')">✅</button>
+          <button class="btn btn-sm" style="background:#E74C3C;color:white;padding:4px 10px;border-radius:6px;" onclick="rejectUser('${u.id}')">❌</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Donors table
+  const donorsTable = document.getElementById('donors-table');
+  if (donors.length === 0) {
+    donorsTable.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>';
+  } else {
+    donorsTable.innerHTML = donors.map(u => `
+      <tr>
+        <td>${u.fullname||'-'}</td>
+        <td><strong style="color:var(--primary)">${u.blood_type||'-'}</strong></td>
+        <td style="direction:ltr">${u.phone||'-'}</td>
+        <td>${u.smoker?'نعم':'لا'}</td>
+        <td>${u.has_diseases?'نعم':'لا'}</td>
+        <td>${u.last_donation||'لم يتبرع'}</td>
+        <td><span class="badge badge-success">نشط</span></td>
+      </tr>
+    `).join('');
+  }
+}
+
+function viewProof(userId) {
+  const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
+  currentReviewUser = userId;
+  const img = document.getElementById('proof-modal-img');
+  img.src = user.proof_url || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect fill="%23f5f5f5" width="400" height="200"/><text x="50%" y="50%" text-anchor="middle" fill="%23999" font-size="16">لا توجد صورة</text></svg>';
+  App.openModal('proof-modal');
+}
+
+function approveUser(userId) {
+  updateUserStatus(userId, 'approved');
+  App.showToast('تم قبول الطلب بنجاح ✅', 'success');
+  ChatSystem.addNotification({ type: 'approval', title: '✅ تمت الموافقة على طلبك', desc: 'تم قبول طلبك. سيتواصل معك المتبرعون قريباً.', userId });
+
+  // ✅ إرسال تحديث الحالة لـ Google Sheets
+  const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
+  const user  = users.find(u => u.id === userId);
+  if (user && typeof SheetsAPI !== 'undefined') {
+    const sheet = user.type === 'beneficiary' ? 'المستفيدون'
+                : user.type === 'hospital'    ? 'المستشفيات'
+                : 'المتبرعون';
+    const name  = user.fullname || user.hospital_name || userId;
+    SheetsAPI.write('الدردشة', [
+      new Date().toLocaleString('ar-EG'), 'ADMIN', 'الإدارة',
+      userId, name,
+      'تمت الموافقة على طلب ' + name + ' (' + (user.blood_type||'') + ')',
+      'موافقة', 'مكتمل'
+    ]);
+  }
+  loadAllData();
+}
+
+function rejectUser(userId, reason) {
+  updateUserStatus(userId, 'rejected');
+  App.showToast('تم رفض الطلب ❌', 'info');
+  ChatSystem.addNotification({ type: 'alert', title: '❌ تم رفض طلبك', desc: 'تم رفض طلبك. يُرجى التواصل معنا لمزيد من المعلومات.', userId });
+
+  // ✅ إرسال تحديث الرفض لـ Google Sheets
+  const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
+  const user  = users.find(u => u.id === userId);
+  if (user && typeof SheetsAPI !== 'undefined') {
+    const name = user.fullname || user.hospital_name || userId;
+    SheetsAPI.write('الدردشة', [
+      new Date().toLocaleString('ar-EG'), 'ADMIN', 'الإدارة',
+      userId, name,
+      'تم رفض طلب ' + name + (reason ? ' — السبب: ' + reason : ''),
+      'رفض', 'مكتمل'
+    ]);
+  }
+  loadAllData();
+}
+
+function approveCurrentUser() {
+  if (currentReviewUser) { approveUser(currentReviewUser); App.closeModal('proof-modal'); }
+}
+
+function rejectCurrentUser() {
+  if (currentReviewUser) { rejectUser(currentReviewUser); App.closeModal('proof-modal'); }
+}
+
+function reviewUser(userId) {
+  viewProof(userId);
+}
+
+function updateUserStatus(userId, status) {
+  const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
+  const idx = users.findIndex(u => u.id === userId);
+  if (idx !== -1) {
+    users[idx].status = status;
+    localStorage.setItem('qh_all_users', JSON.stringify(users));
+  }
+}
+
+function loadChatMonitor() {
+  const allChats = ChatSystem.getAllChats();
+  const flagged = ChatSystem.messages.filter(m => m.flagged);
+  const flaggedAlert = document.getElementById('flagged-alert');
+  if (flagged.length > 0) {
+    flaggedAlert.style.display = 'flex';
+    document.getElementById('flagged-count').textContent = `${flagged.length} رسالة مشبوهة تحتاج مراجعة`;
+  }
+
+  const chatListEl = document.getElementById('admin-chat-list');
+  if (allChats.length === 0) {
+    chatListEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">لا توجد محادثات</div>';
+    return;
+  }
+  chatListEl.innerHTML = allChats.map(c => `
+    <div class="chat-item ${c.flagged ? 'chat-flagged' : ''}" onclick="loadAdminChat('${c.id}', '${c.user1Name} ↔ ${c.user2Name}')">
+      <div class="chat-avatar" style="font-size:1.2rem;">${c.flagged ? '⚠️' : '💬'}</div>
+      <div class="chat-item-info">
+        <div class="chat-item-name">${c.user1Name} ↔ ${c.user2Name}</div>
+        <div class="chat-item-preview">${c.lastMsg.substring(0,40)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+let adminCurrentChat = null;
+function loadAdminChat(chatId, title) {
+  adminCurrentChat = chatId;
+  document.getElementById('admin-chat-header').textContent = title;
+  const msgs = ChatSystem.messages.filter(m => m.chatId === chatId);
+  const el = document.getElementById('admin-chat-messages');
+  el.innerHTML = msgs.map(m => `
+    <div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">${m.senderName} → ${m.receiverName}</div>
+      <div class="msg-bubble received ${m.flagged ? 'chat-flagged' : ''}" style="max-width:85%;">
+        ${m.flagged ? '<span style="font-size:0.75rem;color:var(--warning);display:block;">⚠️ مشبوه</span>' : ''}
+        ${m.text}
+        <div class="msg-time">${new Date(m.timestamp).toLocaleString('ar-EG')}</div>
+      </div>
+    </div>
+  `).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function adminSendMsg() {
+  const input = document.getElementById('admin-chat-input');
+  if (!input.value.trim() || !adminCurrentChat) return;
+  const parts = adminCurrentChat.split('_');
+  const targetId = parts.find(p => p !== 'ADMIN001') || parts[0];
+  ChatSystem.sendMessage('ADMIN001', 'الإدارة', targetId, 'مستخدم', input.value);
+  input.value = '';
+  loadAdminChat(adminCurrentChat, document.getElementById('admin-chat-header').textContent);
+}
+
+function sendAdminNotif() {
+  const title = document.getElementById('notif-title').value;
+  const body = document.getElementById('notif-body').value;
+  const type = document.getElementById('notif-type').value;
+  if (!title || !body) { App.showToast('يرجى ملء جميع الحقول', 'error'); return; }
+  ChatSystem.addNotification({ type, title, desc: body, userId: 'ALL' });
+  App.showToast('تم إرسال الإشعار بنجاح 📣', 'success');
+  document.getElementById('notif-title').value = '';
+  document.getElementById('notif-body').value = '';
+}
+
+// Sidebar toggle for mobile
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  sidebar.classList.toggle('open');
+  backdrop.classList.toggle('open');
+}
+
+// Show/hide sidebar toggle button based on screen size
+function checkMobile() {
+  const btn = document.getElementById('sidebar-toggle-btn');
+  if (btn) btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+}
+
+window.addEventListener('resize', checkMobile);
+
+// Auth guard
+document.addEventListener('DOMContentLoaded', () => {
+  checkMobile();
+  if (!App.user || App.user.type !== 'admin') {
+    App.showToast('يجب تسجيل الدخول كمدير أولاً', 'error');
+    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+    return;
+  }
+  loadAllData();
+});
+</script>
+</body>
+</html>

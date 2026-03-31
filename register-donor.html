@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل متبرع - قطرة حياة</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩸</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="animations.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🩸</div>
+        <div class="logo-text"><span class="name">قطرة حياة</span><span class="tagline">بنك الدم الإلكتروني</span></div>
+      </a>
+      <div class="header-actions">
+        <button class="btn-icon theme-toggle">🌙</button>
+        <button class="lang-toggle">EN</button>
+        <a href="login.html" class="btn btn-outline btn-sm">← العودة</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="register-page">
+  <div class="container">
+    <div class="register-card animate-fadeInUp" style="max-width: 750px;">
+      <div class="register-header">
+        <span class="register-icon">🩸</span>
+        <div class="section-tag" style="display:inline-flex;" data-i18n="reg.donor.title">تسجيل كمتبرع</div>
+        <h2 class="section-title mt-16" data-i18n="reg.donor.title">تسجيل متبرع</h2>
+        <div class="divider"></div>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">شكراً لك على هذا العمل النبيل 💚</p>
+      </div>
+
+      <!-- Donation Terms -->
+      <div class="terms-list mb-24">
+        <h4 style="color: var(--text-primary); margin-bottom: 14px; font-size: 1rem;">
+          📋 <span data-i18n="reg.terms">شروط التبرع</span>
+        </h4>
+        <div class="term-item">
+          <span class="term-icon">✅</span>
+          <span>يجب أن يكون عمرك بين 18 و 65 سنة وزنك لا يقل عن 50 كيلوجرام.</span>
+        </div>
+        <div class="term-item">
+          <span class="term-icon">✅</span>
+          <span>يجب أن تكون بصحة جيدة وخالياً من الأمراض المزمنة الخطيرة.</span>
+        </div>
+        <div class="term-item">
+          <span class="term-icon">✅</span>
+          <span>لا يجوز التبرع إذا كنت مصاباً بالتهاب الكبد الوبائي أو فيروس HIV.</span>
+        </div>
+        <div class="term-item">
+          <span class="term-icon">✅</span>
+          <span>يجب أن يمر على آخر تبرع 3 أشهر على الأقل (للرجال) أو 4 أشهر (للسيدات).</span>
+        </div>
+        <div class="term-item">
+          <span class="term-icon">✅</span>
+          <span>لا يجوز التبرع إذا كنت قد خضعت لعملية جراحية في آخر 6 أشهر.</span>
+        </div>
+        <div class="term-item">
+          <span class="term-icon">✅</span>
+          <span>يجب أن تكون قد نمت جيداً ليلة التبرع وتناولت وجبة خفيفة قبله.</span>
+        </div>
+      </div>
+
+      <form id="form-donor">
+        <!-- Personal Info -->
+        <h4 style="color: var(--primary); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border);">
+          👤 البيانات الشخصية
+        </h4>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label"><span class="required">*</span> <span data-i18n="reg.fullname">الاسم الكامل</span></label>
+            <input type="text" name="fullname" class="form-control" data-validate='{"required":true}' placeholder="الاسم رباعي كاملاً">
+            <div class="form-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"><span class="required">*</span> <span data-i18n="reg.blood">فصيلة الدم</span></label>
+            <select name="blood_type" class="form-control" data-validate='{"required":true}'>
+              <option value="">اختر الفصيلة...</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+            <div class="form-error"></div>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label"><span class="required">*</span> <span data-i18n="reg.phone">رقم الهاتف (11 رقم)</span></label>
+            <input type="tel" name="phone" class="form-control" data-validate='{"required":true,"phone":true}' placeholder="01xxxxxxxxx" maxlength="11" style="direction:ltr;text-align:right;">
+            <div class="form-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"><span class="required">*</span> <span data-i18n="reg.email">البريد الإلكتروني</span></label>
+            <input type="email" name="email" class="form-control" data-validate='{"required":true,"email":true}' placeholder="example@email.com">
+            <div class="form-error"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> <span data-i18n="reg.address">العنوان بالتفصيل</span></label>
+          <textarea name="address" class="form-control" rows="2" data-validate='{"required":true}' placeholder="المحافظة / المدينة / الحي / الشارع..."></textarea>
+          <div class="form-error"></div>
+        </div>
+
+        <!-- Health Questions -->
+        <h4 style="color: var(--primary); margin: 24px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border);">
+          🏥 الأسئلة الصحية
+        </h4>
+
+        <!-- Smoker -->
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> <span data-i18n="reg.smoker">هل أنت مدخن؟</span></label>
+          <div style="display:flex; gap: 20px; margin-top: 8px;">
+            <label class="form-check">
+              <input type="radio" name="smoker" value="yes" id="smoker-yes"> <span data-i18n="yes">نعم</span>
+            </label>
+            <label class="form-check">
+              <input type="radio" name="smoker" value="no" id="smoker-no" checked> <span data-i18n="no">لا</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Diseases -->
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span> <span data-i18n="reg.diseases">هل تعاني من أمراض مزمنة؟</span></label>
+          <div style="display:flex; gap: 20px; margin-top: 8px;">
+            <label class="form-check">
+              <input type="radio" name="has_diseases" value="yes" id="diseases-yes"> <span data-i18n="yes">نعم</span>
+            </label>
+            <label class="form-check">
+              <input type="radio" name="has_diseases" value="no" id="diseases-no" checked> <span data-i18n="no">لا</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="diseases-details-wrap" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" data-i18n="reg.diseases.details">اذكر الأمراض</label>
+            <textarea name="diseases_details" class="form-control" rows="2" placeholder="اذكر الأمراض المزمنة التي تعاني منها..."></textarea>
+          </div>
+        </div>
+
+        <!-- Last Donation -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="reg.last.donation">آخر مرة تبرعت فيها (اتركه فارغاً إذا لم تتبرع من قبل)</label>
+          <input type="date" name="last_donation" class="form-control" style="direction:ltr;text-align:right;">
+        </div>
+
+        <!-- Password -->
+        <h4 style="color: var(--primary); margin: 24px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border);">
+          🔐 بيانات الدخول
+        </h4>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label"><span class="required">*</span> <span data-i18n="reg.password">كلمة المرور</span></label>
+            <input type="password" name="password" id="donor-pass" class="form-control" data-validate='{"required":true,"minlength":8}' placeholder="8 أحرف على الأقل">
+            <div class="form-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"><span class="required">*</span> <span data-i18n="reg.confirm">تأكيد كلمة المرور</span></label>
+            <input type="password" name="confirm_pass" id="donor-confirm" class="form-control" data-validate='{"required":true}' placeholder="أعد كتابة كلمة المرور">
+            <div class="form-error"></div>
+          </div>
+        </div>
+
+        <!-- Terms Accept -->
+        <div class="form-group">
+          <label class="form-check" style="align-items: flex-start; padding: 16px; background: var(--primary-glow); border-radius: var(--radius); border: 1px solid rgba(192,57,43,0.2);">
+            <input type="checkbox" id="terms-check" style="margin-top:3px;">
+            <span style="font-size: 0.9rem; color: var(--text-primary);">
+              أوافق على <strong style="color:var(--primary);">شروط التبرع</strong> المذكورة أعلاه وأقر بأن المعلومات المقدمة صحيحة تماماً.
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg ripple-btn">
+          🩸 <span data-i18n="reg.submit">إرسال الطلب</span>
+        </button>
+
+        <p class="text-center mt-16" style="font-size: 0.85rem; color: var(--text-muted);">
+          لديك حساب؟ <a href="login.html">تسجيل الدخول</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer style="background: var(--text-dark); padding: 16px; text-align: center; color: #666; font-size: 0.8rem;">
+  قطرة حياة © 2024 | منصة مجانية لوجه الله
+</footer>
+
+<script src="app.js"></script>
+<script src="sheets.js"></script>
+<script src="forms.js"></script>
+<script>
+  // Show/hide diseases details
+  document.getElementById('diseases-yes').addEventListener('change', () => {
+    document.getElementById('diseases-details-wrap').style.display = '';
+  });
+  document.getElementById('diseases-no').addEventListener('change', () => {
+    document.getElementById('diseases-details-wrap').style.display = 'none';
+  });
+
+  // Password match
+  document.getElementById('donor-confirm').addEventListener('blur', () => {
+    const pass = document.getElementById('donor-pass').value;
+    const confirm = document.getElementById('donor-confirm').value;
+    const group = document.getElementById('donor-confirm').closest('.form-group');
+    const error = group.querySelector('.form-error');
+    if (pass !== confirm) { group.classList.add('error'); error.textContent = 'كلمتا المرور غير متطابقتين'; }
+    else { group.classList.remove('error'); error.textContent = ''; }
+  });
+</script>
+</body>
+</html>

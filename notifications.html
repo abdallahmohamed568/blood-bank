@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الإشعارات - قطرة حياة</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩸</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="animations.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🩸</div>
+        <div class="logo-text"><span class="name">قطرة حياة</span><span class="tagline">الإشعارات</span></div>
+      </a>
+      <div class="header-actions">
+        <button class="btn-icon theme-toggle">🌙</button>
+        <button class="lang-toggle">EN</button>
+        <a href="dashboard-user.html" class="btn btn-outline btn-sm">← العودة</a>
+        <button class="btn btn-outline btn-sm btn-logout">خروج</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="page-content">
+  <div class="container section">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:1.8rem;font-weight:800;color:var(--text-primary);">🔔 الإشعارات</h1>
+        <p style="color:var(--text-muted);margin:4px 0 0;">كل تحديثات حسابك في مكان واحد</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline btn-sm" onclick="markAllRead()">✅ تحديد الكل كمقروء</button>
+        <button class="btn btn-outline btn-sm" onclick="clearAll()">🗑️ مسح الكل</button>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="filterNotifs('all', this)">الكل</button>
+      <button class="btn btn-outline btn-sm" onclick="filterNotifs('approval', this)">✅ الموافقات</button>
+      <button class="btn btn-outline btn-sm" onclick="filterNotifs('message', this)">💬 الرسائل</button>
+      <button class="btn btn-outline btn-sm" onclick="filterNotifs('alert', this)">⚠️ التنبيهات</button>
+      <button class="btn btn-outline btn-sm" onclick="filterNotifs('info', this)">ℹ️ المعلومات</button>
+    </div>
+
+    <div id="notifications-list" class="notif-list">
+      <div style="text-align:center;padding:80px 20px;color:var(--text-muted);">
+        <div style="font-size:4rem;margin-bottom:16px;">🔔</div>
+        <h3 style="color:var(--text-primary);margin-bottom:8px;">لا توجد إشعارات</h3>
+        <p>ستظهر هنا جميع تحديثات حسابك وإشعارات المنصة</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="app.js"></script>
+<script src="sheets.js"></script>
+<script src="chat.js"></script>
+<script>
+let currentFilter = 'all';
+
+function renderNotifications(filter = 'all') {
+  const user = App.user;
+  if (!user) return;
+
+  const listEl = document.getElementById('notifications-list');
+  let notifs = ChatSystem.getNotificationsForUser(user.id).reverse();
+
+  if (filter !== 'all') {
+    notifs = notifs.filter(n => n.type === filter);
+  }
+
+  if (notifs.length === 0) {
+    listEl.innerHTML = `
+      <div style="text-align:center;padding:80px 20px;color:var(--text-muted);">
+        <div style="font-size:4rem;margin-bottom:16px;">🔔</div>
+        <h3 style="color:var(--text-primary);margin-bottom:8px;">لا توجد إشعارات</h3>
+        <p>ستظهر هنا جميع تحديثات حسابك</p>
+      </div>`;
+    return;
+  }
+
+  const icons = { approval: '✅', message: '💬', alert: '⚠️', info: 'ℹ️' };
+  const iconClasses = { approval: 'approval', message: 'message', alert: 'alert', info: 'info' };
+
+  listEl.innerHTML = notifs.map(notif => `
+    <div class="notif-item ${notif.read ? '' : 'unread'} animate-fadeInUp"
+         onclick="readNotif('${notif.id}');this.classList.remove('unread')">
+      <div class="notif-icon ${iconClasses[notif.type] || 'info'}">${icons[notif.type] || 'ℹ️'}</div>
+      <div class="notif-content">
+        <div class="notif-title">${notif.title}</div>
+        <p class="notif-desc">${notif.desc}</p>
+        <div class="notif-time">🕐 ${new Date(notif.timestamp).toLocaleString('ar-EG')}</div>
+      </div>
+      ${!notif.read ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px;"></div>' : ''}
+    </div>
+  `).join('');
+}
+
+function readNotif(id) {
+  ChatSystem.readNotification(id);
+  ChatSystem.updateBadge();
+}
+
+function filterNotifs(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('[onclick^="filterNotifs"]').forEach(b => {
+    b.classList.remove('btn-primary');
+    b.classList.add('btn-outline');
+  });
+  btn.classList.add('btn-primary');
+  btn.classList.remove('btn-outline');
+  renderNotifications(type);
+}
+
+function markAllRead() {
+  const user = App.user;
+  if (!user) return;
+  ChatSystem.notifications.forEach(n => {
+    if (n.userId === user.id || n.userId === 'ALL') n.read = true;
+  });
+  ChatSystem.saveNotifications();
+  ChatSystem.updateBadge();
+  renderNotifications(currentFilter);
+  App.showToast('تم تحديد الكل كمقروء ✅', 'success');
+}
+
+function clearAll() {
+  const user = App.user;
+  if (!user) return;
+  ChatSystem.notifications = ChatSystem.notifications.filter(n => n.userId !== user.id && n.userId !== 'ALL');
+  ChatSystem.saveNotifications();
+  ChatSystem.updateBadge();
+  renderNotifications(currentFilter);
+  App.showToast('تم مسح الإشعارات 🗑️', 'info');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!App.user) { window.location.href = 'login.html'; return; }
+  ChatSystem.init();
+  renderNotifications();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>اختبار ربط Google Sheets</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f5f5;direction:rtl;padding:30px 16px}
+.wrap{max-width:720px;margin:0 auto}
+h1{color:#C0392B;margin-bottom:6px;font-size:1.6rem}
+.sub{color:#888;margin-bottom:28px;font-size:.9rem}
+.card{background:#fff;border-radius:14px;padding:24px;margin-bottom:18px;border:1px solid #eee;box-shadow:0 3px 16px rgba(0,0,0,.07)}
+.card h3{font-size:1rem;margin-bottom:14px;color:#222}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.btn{padding:10px 22px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:.9rem;font-family:inherit;transition:.2s}
+.btn-red{background:#C0392B;color:#fff}
+.btn-red:hover{background:#96281B}
+.btn-outline{background:#fff;color:#C0392B;border:2px solid #C0392B}
+.btn-outline:hover{background:#fde8e8}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.status{padding:12px 16px;border-radius:8px;font-size:.88rem;margin-top:12px;display:none;line-height:1.6}
+.ok{background:#e8f8ee;color:#1a7a3c;border:1px solid #b3e8c7;display:block}
+.err{background:#fde8e8;color:#a01010;border:1px solid #f5b3b3;display:block}
+.loading{background:#e8f0fe;color:#1a3a7a;border:1px solid #b3c7f5;display:block}
+pre{background:#1a1a1a;color:#f8f8f8;padding:14px;border-radius:8px;font-size:.8rem;overflow-x:auto;margin-top:10px;max-height:200px;overflow-y:auto;direction:ltr;text-align:left}
+code{background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:.84rem;color:#C0392B}
+.cred{background:linear-gradient(135deg,#C0392B,#E74C3C);color:#fff;border-radius:12px;padding:20px;margin-bottom:20px}
+.cred h3{color:#fff;margin-bottom:12px}
+.cred-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.15);border-radius:8px;padding:9px 13px;margin-bottom:8px}
+.cred-row:last-child{margin-bottom:0}
+.cred-row .lbl{font-size:.78rem;opacity:.8;width:70px;flex-shrink:0}
+.cred-row .val{font-weight:700;font-size:.9rem}
+.cred-row .cbtn{margin-right:auto;background:rgba(255,255,255,.25);border:none;color:#fff;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.8rem}
+.cred-row .cbtn:hover{background:rgba(255,255,255,.4)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🩸 اختبار ربط قطرة حياة بـ Google Sheets</h1>
+  <p class="sub">افتح هذه الصفحة في المتصفح للتحقق من صحة الاتصال</p>
+
+  <!-- Credentials -->
+  <div class="cred">
+    <h3>⚙️ الإعدادات المحفوظة</h3>
+    <div class="cred-row">
+      <span class="lbl">Sheet ID</span>
+      <span class="val" style="font-size:.78rem;word-break:break-all">1by4_xeHlL4qKTPIJ7Lfz9U80F5JK1pFR1iJr87a_Bu8</span>
+      <button class="cbtn" onclick="cp('1by4_xeHlL4qKTPIJ7Lfz9U80F5JK1pFR1iJr87a_Bu8',this)">نسخ</button>
+    </div>
+    <div class="cred-row">
+      <span class="lbl">Script URL</span>
+      <span class="val" style="font-size:.72rem;word-break:break-all">...AKfycbzuk2wJmQR4artBy-X9lcg79d0x.../exec</span>
+      <button class="cbtn" onclick="cp('https://script.google.com/macros/s/AKfycbztkPIdedCQISBWG1gOIC8spkjCQ-g75IdJbh04Bf0mGDax4OoRqe-oU6prcRQRtyqU8g/exec',this)">نسخ</button>
+    </div>
+    <div class="cred-row">
+      <span class="lbl">📧 أدمن</span>
+      <span class="val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="660214091609000a0f000357555426010b070f0a4805090b">[email&#160;protected]</a></span>
+      <button class="cbtn" onclick="cp('dropoflife132@gmail.com',this)">نسخ</button>
+    </div>
+    <div class="cred-row">
+      <span class="lbl">🔑 كلمة سر</span>
+      <span class="val">Admin@DropOfLife2024</span>
+      <button class="cbtn" onclick="cp('Admin@DropOfLife2024',this)">نسخ</button>
+    </div>
+  </div>
+
+  <!-- Test 1: Read -->
+  <div class="card">
+    <h3>🔍 اختبار 1 — قراءة البيانات من الجدول</h3>
+    <div class="row">
+      <button class="btn btn-red" onclick="testRead('المستفيدون')">قراءة المستفيدون</button>
+      <button class="btn btn-outline" onclick="testRead('المتبرعون')">قراءة المتبرعون</button>
+      <button class="btn btn-outline" onclick="testRead('المستشفيات')">قراءة المستشفيات</button>
+      <button class="btn btn-outline" onclick="testRead('الدردشة')">قراءة الدردشة</button>
+    </div>
+    <div id="read-status" class="status"></div>
+    <pre id="read-result" style="display:none"></pre>
+  </div>
+
+  <!-- Test 2: Write -->
+  <div class="card">
+    <h3>✍️ اختبار 2 — كتابة صف تجريبي</h3>
+    <p style="font-size:.85rem;color:#888;margin-bottom:14px">سيُضاف صف اختبار في تبويب المستفيدون</p>
+    <button class="btn btn-red" onclick="testWrite()">إرسال بيانات تجريبية</button>
+    <div id="write-status" class="status"></div>
+  </div>
+
+  <!-- Test 3: Full Registration Simulation -->
+  <div class="card">
+    <h3>🧪 اختبار 3 — محاكاة تسجيل متبرع</h3>
+    <button class="btn btn-red" onclick="testDonorReg()">محاكاة تسجيل متبرع كامل</button>
+    <div id="donor-status" class="status"></div>
+  </div>
+
+  <!-- Apps Script Code Reminder -->
+  <div class="card">
+    <h3>📋 كود Apps Script المطلوب في جدولك</h3>
+    <p style="font-size:.85rem;color:#888;margin-bottom:12px">
+      تأكد أن هذا الكود موجود في <code>Extensions → Apps Script</code>
+      وأنك غيّرت <code>YOUR_SHEET_ID_HERE</code> بـ <code>1by4_xeHlL4qKTPIJ7Lfz9U80F5JK1pFR1iJr87a_Bu8</code>
+    </p>
+    <button class="btn btn-outline" onclick="toggleCode()">عرض / إخفاء الكود</button>
+    <pre id="apps-code" style="display:none">
+const SHEET_ID = '1by4_xeHlL4qKTPIJ7Lfz9U80F5JK1pFR1iJr87a_Bu8';
+
+function doPost(e) {
+  try {
+    var ss   = SpreadsheetApp.openById(SHEET_ID);
+    var body = JSON.parse(e.postData.contents);
+    var tab  = ss.getSheetByName(body.sheet);
+    if (!tab) {
+      tab = ss.insertSheet(body.sheet);
+      var hdrs = getHeaders(body.sheet);
+      tab.appendRow(hdrs);
+      tab.getRange(1,1,1,hdrs.length)
+         .setBackground('#C0392B')
+         .setFontColor('#FFFFFF')
+         .setFontWeight('bold');
+      tab.setFrozenRows(1);
+    }
+    tab.appendRow(body.data.map(function(v){
+      return v===undefined||v===null?'':v;
+    }));
+    return out({status:'ok'});
+  } catch(err) {
+    return out({status:'error', msg:err.message});
+  }
+}
+
+function doGet(e) {
+  try {
+    var ss   = SpreadsheetApp.openById(SHEET_ID);
+    var tab  = ss.getSheetByName(e.parameter.sheet||'المستفيدون');
+    if (!tab) return out({status:'error', msg:'Sheet not found'});
+    var data = tab.getDataRange().getValues();
+    return out({status:'ok', data:data});
+  } catch(err) {
+    return out({status:'error', msg:err.message});
+  }
+}
+
+function out(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getHeaders(sheet) {
+  var h = {
+    'المستفيدون':  ['التاريخ','المعرف','الاسم','فصيلة الدم','الهاتف','البريد','العنوان','صورة الإثبات','الحالة'],
+    'المتبرعون':   ['التاريخ','المعرف','الاسم','فصيلة الدم','الهاتف','البريد','العنوان','مدخن','أمراض','تفاصيل','آخر تبرع','الحالة'],
+    'المستشفيات':  ['التاريخ','المعرف','اسم المستشفى','العنوان','البريد','الهاتف','رقم الترخيص','النوع','ملاحظات','الحالة'],
+    'الدردشة':     ['التاريخ','معرف المرسل','اسم المرسل','معرف المستقبل','اسم المستقبل','الرسالة','النوع','الحالة']
+  };
+  return h[sheet] || ['التاريخ','البيانات'];
+}
+    </pre>
+  </div>
+
+  <!-- Link to main site -->
+  <div style="text-align:center;margin-top:24px">
+    <a href="index.html" style="color:#C0392B;font-weight:700;font-size:.95rem">← العودة للموقع الرئيسي</a>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="login.html" style="color:#C0392B;font-weight:700;font-size:.95rem">صفحة تسجيل الدخول</a>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbztkPIdedCQISBWG1gOIC8spkjCQ-g75IdJbh04Bf0mGDax4OoRqe-oU6prcRQRtyqU8g/exec';
+
+function setStatus(id,msg,type){
+  var el=document.getElementById(id);
+  el.className='status '+type;
+  el.innerHTML=msg;
+}
+
+async function testRead(sheet){
+  setStatus('read-status','⏳ جاري القراءة من تبويب: '+sheet+'...','loading');
+  document.getElementById('read-result').style.display='none';
+  try{
+    var url=SCRIPT_URL+'?sheet='+encodeURIComponent(sheet)+'&t='+Date.now();
+    var res=await fetch(url);
+    var obj=await res.json();
+    if(obj.status==='ok'){
+      var rows=obj.data||[];
+      setStatus('read-status','✅ تم الاتصال بنجاح! عدد الصفوف في '+sheet+': <strong>'+rows.length+'</strong>','ok');
+      var pre=document.getElementById('read-result');
+      pre.style.display='block';
+      pre.textContent=JSON.stringify(rows.slice(0,3),null,2)+'\n... (أول 3 صفوف فقط)';
+    } else {
+      setStatus('read-status','❌ خطأ من الـ Script: '+(obj.msg||'unknown'),'err');
+    }
+  }catch(e){
+    setStatus('read-status','❌ فشل الاتصال: '+e.message+'<br><small>تأكد أن الـ Script منشور كـ Web App ويسمح لـ Anyone</small>','err');
+  }
+}
+
+async function testWrite(){
+  setStatus('write-status','⏳ جاري إرسال بيانات تجريبية...','loading');
+  try{
+    var testRow=[
+      new Date().toLocaleString('ar-EG'),
+      'TEST-'+Date.now(),
+      'مستخدم تجريبي',
+      'O+',
+      '01012345678',
+      'test@test.com',
+      'القاهرة، مصر',
+      '❌ لا يوجد',
+      '🧪 اختبار'
+    ];
+    await fetch(SCRIPT_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sheet:'المستفيدون', data:testRow})
+    });
+    setStatus('write-status','✅ تم الإرسال! افتح Google Sheets للتحقق من ظهور الصف الجديد في تبويب <strong>المستفيدون</strong>','ok');
+  }catch(e){
+    setStatus('write-status','❌ فشل الإرسال: '+e.message,'err');
+  }
+}
+
+async function testDonorReg(){
+  setStatus('donor-status','⏳ جاري محاكاة تسجيل متبرع...','loading');
+  try{
+    var donorRow=[
+      new Date().toLocaleString('ar-EG'),
+      'QH-TEST-'+Math.random().toString(36).substr(2,6).toUpperCase(),
+      'أحمد محمد علي (اختبار)',
+      'A+',
+      '01098765432',
+      'donor-test@email.com',
+      'الإسكندرية، مصر',
+      'لا',
+      'لا',
+      '—',
+      'لم يتبرع من قبل',
+      'نشط'
+    ];
+    await fetch(SCRIPT_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sheet:'المتبرعون', data:donorRow})
+    });
+    setStatus('donor-status','✅ تم الإرسال! افتح Google Sheets للتحقق من ظهور المتبرع في تبويب <strong>المتبرعون</strong>','ok');
+  }catch(e){
+    setStatus('donor-status','❌ فشل: '+e.message,'err');
+  }
+}
+
+function toggleCode(){
+  var c=document.getElementById('apps-code');
+  c.style.display=c.style.display==='none'?'block':'no
