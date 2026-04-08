@@ -8,6 +8,65 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="animations.css">
   <link rel="stylesheet" href="components.css">
+  <style>
+    /* ══ FIX 1: RESPONSIVE MOBILE ══ */
+    @media (max-width: 768px) {
+      .dashboard-layout {
+        flex-direction: column !important;
+        position: relative;
+      }
+      .sidebar {
+        position: fixed !important;
+        top: 0; right: -280px;
+        width: 270px !important;
+        height: 100vh;
+        z-index: 999;
+        overflow-y: auto;
+        transition: right 0.3s ease;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+      }
+      .sidebar.open { right: 0 !important; }
+      .sidebar-backdrop {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 998;
+      }
+      .sidebar-backdrop.open { display: block; }
+      .dashboard-main {
+        width: 100% !important;
+        min-width: 0 !important;
+        padding: 12px !important;
+        margin-top: 60px;
+      }
+      #sidebar-toggle-btn { display: flex !important; }
+      .dash-stats {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+      }
+      .dash-stat-card { padding: 14px !important; }
+      .dash-stat-number { font-size: 1.6rem !important; }
+      .data-table-header {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+      }
+      .data-table th, .data-table td {
+        padding: 8px 6px !important;
+        font-size: 0.78rem !important;
+      }
+      .table-scroll { overflow-x: auto; }
+      .chat-monitor-grid {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .dash-stats { grid-template-columns: 1fr !important; }
+      .header-inner { gap: 6px !important; }
+      .logo-text .tagline { display: none; }
+    }
+  </style>
 </head>
 <body>
 
@@ -45,8 +104,9 @@
       <div class="sidebar-user">
         <div class="sidebar-avatar">🛡️</div>
         <div>
-          <div class="sidebar-user-name">المدير العام</div>
-          <div class="sidebar-user-role">Admin</div>
+          <!-- FIX 2: Name from real login data, not hardcoded -->
+          <div class="sidebar-user-name" id="admin-display-name">المدير</div>
+          <div class="sidebar-user-role" id="admin-display-email" style="font-size:0.72rem;opacity:0.8;">Admin</div>
         </div>
       </div>
     </div>
@@ -226,10 +286,11 @@
                 <th>أمراض</th>
                 <th>آخر تبرع</th>
                 <th>الحالة</th>
+                <th>الإجراء</th>
               </tr>
             </thead>
             <tbody id="donors-table">
-              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>
+              <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>
             </tbody>
           </table>
         </div>
@@ -375,95 +436,183 @@
 <script>
 let currentReviewUser = null;
 
-// Section switching
+// ══ Section switching ══════════════════════════════════════
 function showSection(id) {
   document.querySelectorAll('.dash-section').forEach(s => s.style.display = 'none');
   document.querySelectorAll('.sidebar-nav-link').forEach(l => l.classList.remove('active'));
   const el = document.getElementById('section-' + id);
   if (el) el.style.display = '';
   try { event?.currentTarget?.classList.add('active'); } catch(e) {}
-
   if (id === 'chat-monitor') loadChatMonitor();
-  if (id === 'notifications-admin') ChatSystem.renderNotifications();
+  if (id === 'notifications-admin') renderAdminNotifications();
+  // Close sidebar on mobile after navigation
+  if (window.innerWidth <= 768) closeSidebar();
 }
 
-// Load data from localStorage
+// ══ FIX 2: Load real admin name from login data ════════════
+function loadAdminInfo() {
+  const user = App.user;
+  if (!user) return;
+  const nameEl  = document.getElementById('admin-display-name');
+  const emailEl = document.getElementById('admin-display-email');
+  if (nameEl)  nameEl.textContent  = user.name  || user.fullname  || 'المدير';
+  if (emailEl) emailEl.textContent = user.email || 'Admin';
+}
+
+// ══ FIX 3: Dynamic notification badge ══════════════════════
+function updateNotifBadge() {
+  const notifs  = JSON.parse(localStorage.getItem('qh_notifications') || '[]');
+  const unread  = notifs.filter(n => !n.read && (!n.userId || n.userId === 'ADMIN001' || n.userId === 'ALL')).length;
+  // Header badge
+  const headerBadge = document.querySelector('.notif-badge-count');
+  if (headerBadge) {
+    headerBadge.textContent = unread;
+    headerBadge.style.display = unread > 0 ? 'flex' : 'none';
+  }
+  // Sidebar badge
+  document.querySelectorAll('.notif-badge-count').forEach(el => {
+    el.textContent = unread;
+    el.style.display = unread > 0 ? '' : 'none';
+  });
+}
+
+// ══ FIX 4 + 5: Real data only, approval for all types ══════
 function loadAllData() {
   const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
-  const beneficiaries = users.filter(u => u.type === 'beneficiary');
-  const donors = users.filter(u => u.type === 'donor');
-  const hospitals = users.filter(u => u.type === 'hospital');
-  const pending = beneficiaries.filter(u => u.status === 'pending').length + hospitals.filter(u => u.status === 'pending').length;
 
-  document.getElementById('stat-donors').textContent = donors.length;
+  // ── FIX 4: filter out fake/test data (no id or marked as demo) ──
+  const realUsers = users.filter(u => u.id && !u._demo);
+
+  const beneficiaries = realUsers.filter(u => u.type === 'beneficiary');
+  const donors        = realUsers.filter(u => u.type === 'donor');
+  const hospitals     = realUsers.filter(u => u.type === 'hospital');
+
+  // ── FIX 5: count pending for ALL types ──
+  const pendingAll = realUsers.filter(u => u.status === 'pending').length;
+
+  document.getElementById('stat-donors').textContent        = donors.length;
   document.getElementById('stat-beneficiaries').textContent = beneficiaries.length;
-  document.getElementById('stat-hospitals').textContent = hospitals.length;
-  document.getElementById('stat-pending').textContent = pending;
-  document.getElementById('pending-count').textContent = pending;
-  document.getElementById('pending-count').style.display = pending > 0 ? '' : 'none';
+  document.getElementById('stat-hospitals').textContent     = hospitals.length;
+  document.getElementById('stat-pending').textContent       = pendingAll;
 
-  // Recent table
-  const recentTable = document.getElementById('recent-table');
-  if (users.length === 0) {
-    recentTable.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد تسجيلات بعد</td></tr>';
-  } else {
-    recentTable.innerHTML = users.slice(-10).reverse().map(u => `
-      <tr>
-        <td>${u.fullname || u.hospital_name || '-'}</td>
-        <td><span class="badge badge-${u.type==='donor'?'danger':u.type==='hospital'?'info':'warning'}">${u.type==='beneficiary'?'مستفيد':u.type==='donor'?'متبرع':'مستشفى'}</span></td>
-        <td>${u.blood_type || '-'}</td>
-        <td style="direction:ltr">${u.phone || '-'}</td>
-        <td><span class="badge badge-${u.status==='active'||u.status==='approved'?'success':u.status==='rejected'?'danger':'warning'}">${u.status==='pending'?'قيد المراجعة':u.status==='active'||u.status==='approved'?'مقبول':'مرفوض'}</span></td>
-        <td>
-          ${u.type==='beneficiary'&&u.status==='pending' ? `<button class="btn btn-primary btn-sm" onclick="reviewUser('${u.id}')">مراجعة</button>` : ''}
-        </td>
-      </tr>
-    `).join('');
+  const pendingCountEl = document.getElementById('pending-count');
+  if (pendingCountEl) {
+    pendingCountEl.textContent     = pendingAll;
+    pendingCountEl.style.display   = pendingAll > 0 ? '' : 'none';
   }
 
-  // Beneficiaries table
+  // ── Recent table: approve/reject for ALL pending types ──
+  const recentTable = document.getElementById('recent-table');
+  if (realUsers.length === 0) {
+    recentTable.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد تسجيلات بعد</td></tr>';
+  } else {
+    recentTable.innerHTML = realUsers.slice(-10).reverse().map(u => {
+      const name   = u.fullname || u.hospital_name || '-';
+      const typeLbl = u.type === 'beneficiary' ? 'مستفيد' : u.type === 'donor' ? 'متبرع' : 'مستشفى';
+      const typeClass = u.type === 'donor' ? 'danger' : u.type === 'hospital' ? 'info' : 'warning';
+      const stLbl  = u.status === 'pending' ? 'قيد المراجعة' : u.status === 'approved' || u.status === 'active' ? 'مقبول' : 'مرفوض';
+      const stClass = u.status === 'pending' ? 'warning' : (u.status === 'approved' || u.status === 'active') ? 'success' : 'danger';
+      // ── FIX 5: show review button for ALL pending types ──
+      const actionBtn = u.status === 'pending'
+        ? `<div style="display:flex;gap:4px;">
+             <button class="btn btn-sm" style="background:#27AE60;color:white;padding:3px 8px;border-radius:6px;font-size:0.78rem;" onclick="approveUser('${u.id}')">✅ قبول</button>
+             <button class="btn btn-sm" style="background:#E74C3C;color:white;padding:3px 8px;border-radius:6px;font-size:0.78rem;" onclick="rejectUser('${u.id}')">❌ رفض</button>
+           </div>`
+        : `<span style="font-size:0.8rem;color:var(--text-muted);">—</span>`;
+      return `<tr>
+        <td>${name}</td>
+        <td><span class="badge badge-${typeClass}">${typeLbl}</span></td>
+        <td><strong style="color:var(--primary)">${u.blood_type || '—'}</strong></td>
+        <td style="direction:ltr">${u.phone || '—'}</td>
+        <td><span class="badge badge-${stClass}">${stLbl}</span></td>
+        <td>${actionBtn}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Beneficiaries table ──
   const benTable = document.getElementById('beneficiaries-table');
   if (beneficiaries.length === 0) {
-    benTable.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>';
+    benTable.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا يوجد مستفيدون مسجلون بعد</td></tr>';
   } else {
-    benTable.innerHTML = beneficiaries.map(u => `
-      <tr>
-        <td>${u.fullname || '-'}</td>
-        <td><strong style="color:var(--primary)">${u.blood_type || '-'}</strong></td>
-        <td style="direction:ltr">${u.phone || '-'}</td>
-        <td style="font-size:0.8rem">${(u.address||'-').substring(0,30)}...</td>
+    benTable.innerHTML = beneficiaries.map(u => {
+      const stClass = u.status === 'pending' ? 'warning' : (u.status === 'approved') ? 'success' : 'danger';
+      const stLbl   = u.status === 'pending' ? 'قيد المراجعة' : u.status === 'approved' ? 'مقبول' : 'مرفوض';
+      return `<tr>
+        <td>${u.fullname || '—'}</td>
+        <td><strong style="color:var(--primary)">${u.blood_type || '—'}</strong></td>
+        <td style="direction:ltr">${u.phone || '—'}</td>
+        <td style="font-size:0.8rem">${(u.address || '—').substring(0, 28)}${(u.address||'').length > 28 ? '...' : ''}</td>
         <td><button class="btn btn-outline btn-sm" onclick="viewProof('${u.id}')">📄 عرض</button></td>
-        <td><span class="badge badge-${u.status==='pending'?'warning':u.status==='approved'?'success':'danger'}">${u.status==='pending'?'قيد المراجعة':u.status==='approved'?'مقبول':'مرفوض'}</span></td>
+        <td><span class="badge badge-${stClass}">${stLbl}</span></td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-sm" style="background:#27AE60;color:white;padding:4px 10px;border-radius:6px;" onclick="approveUser('${u.id}')">✅</button>
           <button class="btn btn-sm" style="background:#E74C3C;color:white;padding:4px 10px;border-radius:6px;" onclick="rejectUser('${u.id}')">❌</button>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   }
 
-  // Donors table
+  // ── Donors table — FIX 5: add approve/reject ──
   const donorsTable = document.getElementById('donors-table');
   if (donors.length === 0) {
-    donorsTable.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد بيانات بعد</td></tr>';
+    donorsTable.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">لا يوجد متبرعون مسجلون بعد</td></tr>';
   } else {
-    donorsTable.innerHTML = donors.map(u => `
-      <tr>
-        <td>${u.fullname||'-'}</td>
-        <td><strong style="color:var(--primary)">${u.blood_type||'-'}</strong></td>
-        <td style="direction:ltr">${u.phone||'-'}</td>
-        <td>${u.smoker?'نعم':'لا'}</td>
-        <td>${u.has_diseases?'نعم':'لا'}</td>
-        <td>${u.last_donation||'لم يتبرع'}</td>
-        <td><span class="badge badge-success">نشط</span></td>
-      </tr>
-    `).join('');
+    donorsTable.innerHTML = donors.map(u => {
+      const stClass = u.status === 'pending' ? 'warning' : (u.status === 'active' || u.status === 'approved') ? 'success' : 'danger';
+      const stLbl   = u.status === 'pending' ? 'قيد المراجعة' : (u.status === 'active' || u.status === 'approved') ? 'نشط' : 'مرفوض';
+      const actions = u.status === 'pending'
+        ? `<div style="display:flex;gap:4px;">
+             <button class="btn btn-sm" style="background:#27AE60;color:white;padding:4px 8px;border-radius:6px;font-size:0.78rem;" onclick="approveUser('${u.id}')">✅</button>
+             <button class="btn btn-sm" style="background:#E74C3C;color:white;padding:4px 8px;border-radius:6px;font-size:0.78rem;" onclick="rejectUser('${u.id}')">❌</button>
+           </div>`
+        : `<span style="font-size:0.8rem;color:var(--text-muted);">—</span>`;
+      return `<tr>
+        <td>${u.fullname || '—'}</td>
+        <td><strong style="color:var(--primary)">${u.blood_type || '—'}</strong></td>
+        <td style="direction:ltr">${u.phone || '—'}</td>
+        <td>${u.smoker ? 'نعم' : 'لا'}</td>
+        <td>${u.has_diseases ? 'نعم' : 'لا'}</td>
+        <td>${u.last_donation || 'لم يتبرع'}</td>
+        <td><span class="badge badge-${stClass}">${stLbl}</span></td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
   }
+
+  // ── Hospitals table — FIX 5: add approve/reject ──
+  const hospTable = document.getElementById('hospitals-table');
+  if (hospitals.length === 0) {
+    hospTable.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">لا توجد مستشفيات مسجلة بعد</td></tr>';
+  } else {
+    hospTable.innerHTML = hospitals.map(u => {
+      const stClass = u.status === 'pending' ? 'warning' : (u.status === 'approved' || u.status === 'active') ? 'success' : 'danger';
+      const stLbl   = u.status === 'pending' ? 'قيد المراجعة' : (u.status === 'approved' || u.status === 'active') ? 'مقبول' : 'مرفوض';
+      const actions = u.status === 'pending'
+        ? `<div style="display:flex;gap:4px;">
+             <button class="btn btn-sm" style="background:#27AE60;color:white;padding:4px 8px;border-radius:6px;font-size:0.78rem;" onclick="approveUser('${u.id}')">✅</button>
+             <button class="btn btn-sm" style="background:#E74C3C;color:white;padding:4px 8px;border-radius:6px;font-size:0.78rem;" onclick="rejectUser('${u.id}')">❌</button>
+           </div>`
+        : `<span style="font-size:0.8rem;color:var(--text-muted);">—</span>`;
+      return `<tr>
+        <td>${u.hospital_name || u.fullname || '—'}</td>
+        <td style="font-size:0.8rem">${(u.address || '—').substring(0, 25)}${(u.address||'').length > 25 ? '...' : ''}</td>
+        <td style="direction:ltr;font-size:0.8rem">${u.email || '—'}</td>
+        <td>${u.license_number || '—'}</td>
+        <td style="direction:ltr">${u.phone || '—'}</td>
+        <td><span class="badge badge-${stClass}">${stLbl}</span></td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Update notification badge (FIX 3)
+  updateNotifBadge();
 }
 
 function viewProof(userId) {
   const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
-  const user = users.find(u => u.id === userId);
+  const user  = users.find(u => u.id === userId);
   if (!user) return;
   currentReviewUser = userId;
   const img = document.getElementById('proof-modal-img');
@@ -474,20 +623,22 @@ function viewProof(userId) {
 function approveUser(userId) {
   updateUserStatus(userId, 'approved');
   App.showToast('تم قبول الطلب بنجاح ✅', 'success');
-  ChatSystem.addNotification({ type: 'approval', title: '✅ تمت الموافقة على طلبك', desc: 'تم قبول طلبك. سيتواصل معك المتبرعون قريباً.', userId });
-
-  // ✅ إرسال تحديث الحالة لـ Google Sheets
+  // Notify the user
   const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
   const user  = users.find(u => u.id === userId);
+  const name  = user ? (user.fullname || user.hospital_name || userId) : userId;
+  ChatSystem.addNotification({
+    type: 'approval',
+    title: '✅ تمت الموافقة على طلبك',
+    desc: `مرحباً ${name}، تمت الموافقة على طلبك بنجاح. يمكنك الآن الاستفادة من خدمات المنصة.`,
+    userId
+  });
+  // Log to Google Sheets
   if (user && typeof SheetsAPI !== 'undefined') {
-    const sheet = user.type === 'beneficiary' ? 'المستفيدون'
-                : user.type === 'hospital'    ? 'المستشفيات'
-                : 'المتبرعون';
-    const name  = user.fullname || user.hospital_name || userId;
+    const sheet = user.type === 'hospital' ? 'المستشفيات' : user.type === 'donor' ? 'المتبرعون' : 'المستفيدون';
     SheetsAPI.write('الدردشة', [
-      new Date().toLocaleString('ar-EG'), 'ADMIN', 'الإدارة',
-      userId, name,
-      'تمت الموافقة على طلب ' + name + ' (' + (user.blood_type||'') + ')',
+      new Date().toLocaleString('ar-EG'), 'ADMIN', 'الإدارة', userId, name,
+      'تمت الموافقة على ' + name + ' (' + (user.type === 'hospital' ? 'مستشفى' : user.type === 'donor' ? 'متبرع' : 'مستفيد') + ')',
       'موافقة', 'مكتمل'
     ]);
   }
@@ -497,17 +648,19 @@ function approveUser(userId) {
 function rejectUser(userId, reason) {
   updateUserStatus(userId, 'rejected');
   App.showToast('تم رفض الطلب ❌', 'info');
-  ChatSystem.addNotification({ type: 'alert', title: '❌ تم رفض طلبك', desc: 'تم رفض طلبك. يُرجى التواصل معنا لمزيد من المعلومات.', userId });
-
-  // ✅ إرسال تحديث الرفض لـ Google Sheets
   const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
   const user  = users.find(u => u.id === userId);
+  const name  = user ? (user.fullname || user.hospital_name || userId) : userId;
+  ChatSystem.addNotification({
+    type: 'alert',
+    title: '❌ تم رفض طلبك',
+    desc: 'تم رفض طلبك. يُرجى التواصل مع الإدارة لمزيد من التفاصيل.',
+    userId
+  });
   if (user && typeof SheetsAPI !== 'undefined') {
-    const name = user.fullname || user.hospital_name || userId;
     SheetsAPI.write('الدردشة', [
-      new Date().toLocaleString('ar-EG'), 'ADMIN', 'الإدارة',
-      userId, name,
-      'تم رفض طلب ' + name + (reason ? ' — السبب: ' + reason : ''),
+      new Date().toLocaleString('ar-EG'), 'ADMIN', 'الإدارة', userId, name,
+      'تم رفض ' + name + (reason ? ' — السبب: ' + reason : ''),
       'رفض', 'مكتمل'
     ]);
   }
@@ -517,35 +670,31 @@ function rejectUser(userId, reason) {
 function approveCurrentUser() {
   if (currentReviewUser) { approveUser(currentReviewUser); App.closeModal('proof-modal'); }
 }
-
 function rejectCurrentUser() {
   if (currentReviewUser) { rejectUser(currentReviewUser); App.closeModal('proof-modal'); }
 }
-
-function reviewUser(userId) {
-  viewProof(userId);
-}
+function reviewUser(userId) { viewProof(userId); }
 
 function updateUserStatus(userId, status) {
   const users = JSON.parse(localStorage.getItem('qh_all_users') || '[]');
-  const idx = users.findIndex(u => u.id === userId);
+  const idx   = users.findIndex(u => u.id === userId);
   if (idx !== -1) {
     users[idx].status = status;
     localStorage.setItem('qh_all_users', JSON.stringify(users));
   }
 }
 
+// ══ Chat monitor ══════════════════════════════════════════
 function loadChatMonitor() {
-  const allChats = ChatSystem.getAllChats();
-  const flagged = ChatSystem.messages.filter(m => m.flagged);
+  const allChats = ChatSystem.getAllChats ? ChatSystem.getAllChats() : [];
+  const flagged  = ChatSystem.messages.filter(m => m.flagged);
   const flaggedAlert = document.getElementById('flagged-alert');
   if (flagged.length > 0) {
     flaggedAlert.style.display = 'flex';
     document.getElementById('flagged-count').textContent = `${flagged.length} رسالة مشبوهة تحتاج مراجعة`;
   }
-
   const chatListEl = document.getElementById('admin-chat-list');
-  if (allChats.length === 0) {
+  if (!allChats.length) {
     chatListEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;">لا توجد محادثات</div>';
     return;
   }
@@ -554,7 +703,7 @@ function loadChatMonitor() {
       <div class="chat-avatar" style="font-size:1.2rem;">${c.flagged ? '⚠️' : '💬'}</div>
       <div class="chat-item-info">
         <div class="chat-item-name">${c.user1Name} ↔ ${c.user2Name}</div>
-        <div class="chat-item-preview">${c.lastMsg.substring(0,40)}</div>
+        <div class="chat-item-preview">${(c.lastMsg||'').substring(0, 40)}</div>
       </div>
     </div>
   `).join('');
@@ -565,7 +714,7 @@ function loadAdminChat(chatId, title) {
   adminCurrentChat = chatId;
   document.getElementById('admin-chat-header').textContent = title;
   const msgs = ChatSystem.messages.filter(m => m.chatId === chatId);
-  const el = document.getElementById('admin-chat-messages');
+  const el   = document.getElementById('admin-chat-messages');
   el.innerHTML = msgs.map(m => `
     <div>
       <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">${m.senderName} → ${m.receiverName}</div>
@@ -582,50 +731,95 @@ function loadAdminChat(chatId, title) {
 function adminSendMsg() {
   const input = document.getElementById('admin-chat-input');
   if (!input.value.trim() || !adminCurrentChat) return;
-  const parts = adminCurrentChat.split('_');
+  const parts    = adminCurrentChat.split('_');
   const targetId = parts.find(p => p !== 'ADMIN001') || parts[0];
   ChatSystem.sendMessage('ADMIN001', 'الإدارة', targetId, 'مستخدم', input.value);
   input.value = '';
   loadAdminChat(adminCurrentChat, document.getElementById('admin-chat-header').textContent);
 }
 
-function sendAdminNotif() {
-  const title = document.getElementById('notif-title').value;
-  const body = document.getElementById('notif-body').value;
-  const type = document.getElementById('notif-type').value;
-  if (!title || !body) { App.showToast('يرجى ملء جميع الحقول', 'error'); return; }
-  ChatSystem.addNotification({ type, title, desc: body, userId: 'ALL' });
-  App.showToast('تم إرسال الإشعار بنجاح 📣', 'success');
-  document.getElementById('notif-title').value = '';
-  document.getElementById('notif-body').value = '';
+// ══ Notifications ══════════════════════════════════════════
+function renderAdminNotifications() {
+  const notifs = JSON.parse(localStorage.getItem('qh_notifications') || '[]');
+  const el     = document.getElementById('notifications-list');
+  if (!el) return;
+  const adminNotifs = notifs.filter(n => n.userId === 'ADMIN001' || n.userId === 'ALL' || !n.userId);
+  if (!adminNotifs.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">لا توجد إشعارات</div>';
+    return;
+  }
+  el.innerHTML = adminNotifs.reverse().map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}" onclick="markNotifRead('${n.id}')">
+      <div class="notif-icon">${n.type === 'approval' ? '✅' : n.type === 'alert' ? '⚠️' : n.type === 'message' ? '💬' : 'ℹ️'}</div>
+      <div class="notif-content">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-desc">${n.desc || ''}</div>
+        <div class="notif-time">${new Date(n.timestamp || Date.now()).toLocaleString('ar-EG')}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
-// Sidebar toggle for mobile
+function markNotifRead(id) {
+  const notifs = JSON.parse(localStorage.getItem('qh_notifications') || '[]');
+  const idx    = notifs.findIndex(n => n.id === id);
+  if (idx !== -1) { notifs[idx].read = true; localStorage.setItem('qh_notifications', JSON.stringify(notifs)); }
+  updateNotifBadge();
+  renderAdminNotifications();
+}
+
+function sendAdminNotif() {
+  const title = document.getElementById('notif-title').value.trim();
+  const body  = document.getElementById('notif-body').value.trim();
+  const type  = document.getElementById('notif-type').value;
+  const target = document.getElementById('notif-target').value;
+  if (!title || !body) { App.showToast('يرجى ملء جميع الحقول', 'error'); return; }
+  ChatSystem.addNotification({ type, title, desc: body, userId: target });
+  App.showToast('تم إرسال الإشعار بنجاح 📣', 'success');
+  document.getElementById('notif-title').value = '';
+  document.getElementById('notif-body').value  = '';
+  updateNotifBadge();
+}
+
+// ══ Sidebar mobile toggle ══════════════════════════════════
 function toggleSidebar() {
-  const sidebar = document.querySelector('.sidebar');
+  const sidebar  = document.querySelector('.sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
   sidebar.classList.toggle('open');
   backdrop.classList.toggle('open');
 }
-
-// Show/hide sidebar toggle button based on screen size
+function closeSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-backdrop')?.classList.remove('open');
+}
 function checkMobile() {
   const btn = document.getElementById('sidebar-toggle-btn');
   if (btn) btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
 }
-
 window.addEventListener('resize', checkMobile);
 
-// Auth guard
+// ══ Auth guard + init ══════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   checkMobile();
+
+  // ── FIX 2: guard — must be admin ──
   if (!App.user || App.user.type !== 'admin') {
     App.showToast('يجب تسجيل الدخول كمدير أولاً', 'error');
     setTimeout(() => { window.location.href = 'login.html'; }, 1500);
     return;
   }
+
+  // ── FIX 2: show real admin name ──
+  loadAdminInfo();
+
+  // ── FIX 4: load only real data ──
   loadAllData();
+
+  // ── FIX 3: update badge every 5s ──
+  updateNotifBadge();
+  setInterval(() => { updateNotifBadge(); loadAllData(); }, 5000);
 });
 </script>
+
 </body>
 </html>
