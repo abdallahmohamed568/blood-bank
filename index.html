@@ -12,7 +12,6 @@
 </head>
 <body>
 
-<!-- ===== HEADER ===== -->
 <header class="header" id="header">
   <div class="container">
     <div class="header-inner">
@@ -37,29 +36,29 @@
         <a href="login.html" class="btn btn-primary btn-sm btn-login-header ripple-btn" data-i18n="nav.login">تسجيل الدخول</a>
         <a href="dashboard-user.html" class="btn btn-outline btn-sm dash-link" style="display:none" data-i18n="nav.dashboard">لوحة التحكم</a>
         <button class="btn btn-outline btn-sm btn-logout" style="display:none" data-i18n="nav.logout">تسجيل الخروج</button>
+        
         <button class="hamburger" id="hamburger" aria-label="القائمة">
-          <span></span><span></span><span></span>
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
     </div>
   </div>
 </header>
 
-<!-- Mobile Nav -->
 <nav class="mobile-nav" id="mobile-nav">
-  <a href="#home" class="mobile-nav-link" data-i18n="nav.home" onclick="document.getElementById('mobile-nav').classList.remove('open')">🏠 الرئيسية</a>
-  <a href="#goals" class="mobile-nav-link" data-i18n="nav.goals" onclick="document.getElementById('mobile-nav').classList.remove('open')">🎯 أهدافنا</a>
-  <a href="#about" class="mobile-nav-link" data-i18n="nav.about" onclick="document.getElementById('mobile-nav').classList.remove('open')">👥 من نحن</a>
-  <a href="#contact" class="mobile-nav-link" data-i18n="nav.contact" onclick="document.getElementById('mobile-nav').classList.remove('open')">📞 تواصل معنا</a>
+  <a href="#home" class="mobile-nav-link" data-i18n="nav.home" onclick="App.toggleMenu(false)">🏠 الرئيسية</a>
+  <a href="#goals" class="mobile-nav-link" data-i18n="nav.goals" onclick="App.toggleMenu(false)">🎯 أهدافنا</a>
+  <a href="#about" class="mobile-nav-link" data-i18n="nav.about" onclick="App.toggleMenu(false)">👥 من نحن</a>
+  <a href="#contact" class="mobile-nav-link" data-i18n="nav.contact" onclick="App.toggleMenu(false)">📞 تواصل معنا</a>
   <div style="padding: 4px 0; border-top: 1px solid var(--border); margin-top: 8px;">
     <a href="login.html" class="btn btn-primary btn-full mt-8" style="justify-content:center;">🩸 تسجيل الدخول</a>
   </div>
 </nav>
 
-<!-- ===== PAGE CONTENT ===== -->
 <main class="page-content">
 
-  <!-- HERO -->
   <section class="hero" id="home">
     <div class="hero-bg-pattern"></div>
     <div class="blood-drops-bg">
@@ -116,7 +115,6 @@
         </div>
       </div>
 
-      <!-- Stats -->
       <div class="stats-bar reveal mt-32">
         <div class="stat-item">
           <div class="stat-number" data-target="1247">٠</div>
@@ -134,7 +132,6 @@
     </div>
   </section>
 
-  <!-- GOALS SECTION -->
   <section class="section" id="goals">
     <div class="container">
       <div class="section-header reveal">
@@ -186,7 +183,6 @@
     </div>
   </section>
 
-  <!-- ABOUT SECTION -->
   <section class="section" id="about" style="background: var(--bg-secondary);">
     <div class="container">
       <div class="about-grid">
@@ -213,7 +209,6 @@
             </div>
           </div>
 
-          <!-- Free badge — hidden on mobile via CSS -->
           <div class="about-free-badge" style="position: absolute; top: -16px; left: -16px; background: linear-gradient(135deg, #27AE60, #2ECC71); color: white; padding: 12px 20px; border-radius: 14px; font-weight: 800; box-shadow: 0 8px 20px rgba(39,174,96,0.3); white-space:nowrap;">
             ✅ مجاني 100%
           </div>
@@ -233,7 +228,7 @@
               <div class="about-point-icon">🤝</div>
               <div class="about-point-text">
                 <div class="title" data-i18n="about.point1.title">فريق متطوع</div>
-                <p class="desc" data-i18n="about.point1.desc">فريق من المتطوعين المتحمسين لخدمة المجتمع</p>
+                <p class="desc" data-i18n="about.point1.desc">فريق من المتبرعين المتحمسين لخدمة المجتمع</p>
               </div>
             </li>
             <li class="about-point">
@@ -263,7 +258,6 @@
     </div>
   </section>
 
-  <!-- CONTACT SECTION -->
   <section class="section contact-section" id="contact">
     <div class="container">
       <div class="section-header reveal">
@@ -278,11 +272,11 @@
           <h3 class="contact-info-title" data-i18n="contact.form.title">راسلنا الآن</h3>
           <p class="contact-info-desc" data-i18n="contact.desc">نحن هنا لمساعدتك في أي وقت</p>
 
-          <a href="/cdn-cgi/l/email-protection#a6c2d4c9d6c9c0cacfc0c3979594e6c1cbc7cfca88c5c9cb" class="contact-detail">
+          <a href="mailto:contact@qtrah-life.com" class="contact-detail">
             <span class="icon">📧</span>
             <div class="info">
               <span class="label" data-i18n="contact.email.label">البريد الإلكتروني</span>
-              <span class="value"><span class="__cf_email__" data-cfemail="d3b7a1bca3bcb5bfbab5b6e2e0e193b4beb2babffdb0bcbe">[email&#160;protected]</span></span>
+              <span class="value">contact@qtrah-life.com</span>
             </div>
           </a>
 
@@ -350,7 +344,6 @@
 
 </main>
 
-<!-- ===== FOOTER ===== -->
 <footer class="footer">
   <div class="container">
     <div class="footer-grid">
@@ -390,7 +383,7 @@
         <h4 class="footer-title" data-i18n="footer.contact">تواصل معنا</h4>
         <div class="footer-contact-item">
           <span class="icon">📧</span>
-          <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cbafb9a4bba4ada7a2adaefaf8f98baca6aaa2a7e5a8a4a6">[email&#160;protected]</a></span>
+          <span>contact@qtrah-life.com</span>
         </div>
         <div class="footer-contact-item">
           <span class="icon">📞</span>
@@ -410,17 +403,24 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="app.js"></script>
+<script src="app.js"></script>
 <script src="sheets.js"></script>
 <script src="forms.js"></script>
 <script src="chat.js"></script>
 
 <script>
-  // Fix hero title for both languages
   document.addEventListener('DOMContentLoaded', () => {
     const heroTitle = document.querySelector('.hero-title');
     if (heroTitle) {
       const updateHeroTitle = () => {
         if (App.lang === 'en') {
           heroTitle.innerHTML = '<span class="highlight">One Drop From You...</span><br><span>A Life For Someone</span>';
-     
+        }
+      };
+      updateHeroTitle();
+    }
+  });
+</script>
+
+</body>
+</html>
